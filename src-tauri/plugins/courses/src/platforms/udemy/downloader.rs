@@ -892,7 +892,7 @@ async fn probe_video(path: &Path) -> anyhow::Result<(f64, String)> {
         ));
     }
     let json: serde_json::Value = serde_json::from_slice(&output.stdout)?;
-    if json["streams"].as_array().map_or(true, |s| s.is_empty()) {
+    if json["streams"].as_array().is_none_or(|s| s.is_empty()) {
         return Err(anyhow!("Video stream missing"));
     }
     let duration = json["format"]["duration"]
