@@ -1,0 +1,2629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>OmniGet Quickstart Guide · OmniGet Documentation</title>
+  <meta name="description" content="Free open-source desktop app to download courses, video, audio, images and torrents, then transcribe, read and study them. Windows, macOS and Linux." />
+  <link rel="canonical" href="https://omniget.nav.bd/docs/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="OmniGet Documentation" />
+  <meta property="og:title" content="OmniGet Quickstart Guide" />
+  <meta property="og:description" content="Free open-source desktop app to download courses, video, audio, images and torrents, then transcribe, read and study them. Windows, macOS and Linux." />
+  <meta property="og:url" content="https://omniget.nav.bd/docs/" />
+  <meta property="og:image" content="https://omniget.nav.bd/assets/readme/home.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <link rel="icon" type="image/png" sizes="256x256" href="../static/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../static/favicon.png" />
+
+  <!-- Early Theme Init Script to eliminate Flash of Wrong Theme -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('omniget_docs_theme') || localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Fonts: Geist + Geist Mono, the vercel.com/docs typefaces -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       OmniGet Documentation — UI skin
+       Design system: vercel.com/docs (Geist type, Vercel palette)
+       ============================================================ */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ---------- Design tokens ---------- */
+
+    :root {
+      color-scheme: light;
+
+      --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --font-display: var(--font-sans);
+      --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+      /* Vercel light theme */
+      --bg: #ffffff;
+      --bg-surface: #ffffff;
+      --bg-subtle: #fafafa;
+      --bg-muted: #f4f4f5;
+      --bg-hover: #f4f4f5;
+      --bg-card: #ffffff;
+      --bg-code: #111111;
+      --code-header: #171717;
+      --code-border: #333333;
+
+      --border: #eaeaea;
+      --border-subtle: #f4f4f5;
+      --border-hover: #999999;
+      --border-focus: #171717;
+
+      --text: #171717;
+      --text-muted: #666666;
+      --text-subtle: #888888;
+      --text-inverse: #ffffff;
+
+      --primary: #171717;
+      --primary-hover: #333333;
+      --primary-light: #f4f4f5;
+      --primary-border: #171717;
+
+      --link: #0070f3;
+      --link-hover: #3291ff;
+      --success: #50e3c2;
+
+      --callout-bg: #fafafa;
+      --callout-border: #eaeaea;
+      --callout-text: #171717;
+
+      --header-h: 64px;
+      --tabs-h: 44px;
+      --header-total-h: 108px;
+      --sidebar-w: 272px;
+      --toc-w: 240px;
+      --max-w: 1440px;
+
+      --radius-sm: 8px;
+      --radius-md: 10px;
+      --radius-lg: 12px;
+    }
+
+    html.dark {
+      color-scheme: dark;
+
+      /* Vercel dark theme */
+      --bg: #000000;
+      --bg-surface: #0a0a0a;
+      --bg-subtle: #111111;
+      --bg-muted: #18181b;
+      --bg-hover: #18181b;
+      --bg-card: #0a0a0a;
+      --bg-code: #111111;
+      --code-header: #171717;
+      --code-border: #262626;
+
+      --border: #1f1f1f;
+      --border-subtle: #141414;
+      --border-hover: #444444;
+      --border-focus: #ededed;
+
+      --text: #ededed;
+      --text-muted: #a1a1aa;
+      --text-subtle: #71717a;
+      --text-inverse: #000000;
+
+      --primary: #ededed;
+      --primary-hover: #ffffff;
+      --primary-light: #18181b;
+      --primary-border: #ededed;
+
+      --link: #3291ff;
+      --link-hover: #66aaff;
+
+      --callout-bg: #0a0a0a;
+      --callout-border: #1f1f1f;
+      --callout-text: #ededed;
+    }
+
+    /* ---------- Base ---------- */
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    ::selection {
+      background: #0070f3;
+      color: #ffffff;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--link);
+      outline-offset: 2px;
+    }
+
+    /* ---------- Icons ---------- */
+
+    .icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+
+    .icon-lg { width: 18px; height: 18px; }
+    .icon-sm { width: 14px; height: 14px; }
+    .icon-xs { width: 12px; height: 12px; }
+
+    /* ---------- Top navbar ---------- */
+
+    .nav-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-header-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: var(--header-h);
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .brand-logo-link img {
+      display: block;
+      height: 22px;
+      width: auto;
+    }
+
+    .brand-badge {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--text-muted);
+    }
+
+    /* Search trigger (the "Search Docs" pill) */
+    .search-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      min-width: 160px;
+      max-width: 300px;
+      flex: 0 1 auto;
+      padding: 0 8px 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text-subtle);
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .search-trigger:hover {
+      border-color: var(--border-hover);
+    }
+
+    .search-trigger > span {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .search-kbd {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: auto;
+    }
+
+    .nav-link-item {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .nav-link-item:hover {
+      color: var(--text);
+    }
+
+    .nav-link-item.active {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-muted);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+
+    .btn-top-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--text-inverse);
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.15s ease;
+    }
+
+    .btn-top-download:hover {
+      background: var(--primary-hover);
+    }
+
+    /* ---------- Section subtabs ---------- */
+
+    .nav-subtabs {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-subtabs-inner {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: var(--tabs-h);
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-subtabs-inner::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-subtabs-inner .subtab-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: var(--tabs-h);
+      padding: 0 12px;
+      border-radius: 0;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: color 0.15s ease;
+    }
+
+    .nav-subtabs-inner .subtab-item:hover {
+      color: var(--text);
+    }
+
+    .nav-subtabs-inner .subtab-item.active {
+      color: var(--text);
+      font-weight: 500;
+      box-shadow: inset 0 -2px 0 0 var(--text);
+    }
+
+    .nav-subtabs-inner .subtab-item .icon {
+      display: none;
+    }
+
+    /* Generic subtab link used inside page content (e.g. "GitHub Tag") */
+    .subtab-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .subtab-item:hover {
+      color: var(--text);
+    }
+
+    /* ---------- Shell layout ---------- */
+
+    .docs-layout {
+      display: flex;
+      align-items: flex-start;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .docs-sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: var(--header-total-h);
+      height: calc(100vh - var(--header-total-h));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 28px 16px 48px 8px;
+    }
+
+    .docs-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      max-width: 736px;
+      margin: 0 auto;
+      padding: 40px 40px 96px;
+    }
+
+    .docs-toc {
+      width: var(--toc-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: var(--header-total-h);
+      height: calc(100vh - var(--header-total-h));
+      overflow-y: auto;
+      padding: 40px 24px 48px 0;
+    }
+
+    /* ---------- Sidebar navigation ---------- */
+
+    .sidebar-group {
+      margin-bottom: 22px;
+    }
+
+    .sidebar-group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-subtle);
+    }
+
+    .sidebar-group-header .icon {
+      display: none;
+    }
+
+    .sidebar-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text);
+      background: var(--bg-hover);
+    }
+
+    .sidebar-link.active {
+      color: var(--text);
+      background: var(--bg-hover);
+      font-weight: 500;
+    }
+
+    .sidebar-tag {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      white-space: nowrap;
+    }
+
+    /* ---------- Mobile sidebar drawer ---------- */
+
+    .mobile-sidebar-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .mobile-sidebar-toggle:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+
+    .mobile-sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      top: var(--header-total-h);
+      z-index: 39;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .mobile-sidebar-backdrop.open {
+      display: block;
+    }
+
+    /* ---------- Breadcrumbs ---------- */
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .docs-main .breadcrumbs a {
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .docs-main .breadcrumbs a:hover {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .breadcrumb-sep {
+      color: var(--border-hover);
+    }
+
+    .breadcrumb-current {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ---------- Article typography ---------- */
+
+    .doc-h1 {
+      font-size: 36px;
+      line-height: 1.15;
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .doc-lead {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .doc-p {
+      font-size: 15.5px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .doc-h2 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.014em;
+      color: var(--text);
+      margin: 44px 0 12px;
+    }
+
+    .doc-h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 28px 0 8px;
+    }
+
+    .doc-h1, .doc-h2, .doc-h3 {
+      scroll-margin-top: calc(var(--header-total-h) + 24px);
+    }
+
+    strong {
+      font-weight: 600;
+    }
+
+    .docs-main a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    .docs-main a:hover {
+      text-decoration: underline;
+    }
+
+    /* Content links that are UI buttons, not prose links */
+    .docs-main a.subtab-item,
+    .docs-main a.page-nav-card {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .docs-main a.subtab-item:hover {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .docs-main a.page-nav-card:hover {
+      color: var(--text-muted);
+      border-color: var(--border-hover);
+      text-decoration: none;
+    }
+
+    /* Inline code */
+    .docs-main code {
+      font-family: var(--font-mono);
+      font-size: 0.855em;
+      background: var(--bg-muted);
+      color: var(--text);
+      padding: 0.15em 0.4em;
+      border-radius: 6px;
+    }
+
+    /* ---------- Figures ---------- */
+
+    .doc-media-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin: 24px 0;
+    }
+
+    .doc-media-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--bg-subtle);
+    }
+
+    .doc-media-caption {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    /* ---------- Callouts ---------- */
+
+    .callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 24px 0;
+      padding: 16px 20px;
+      border: 1px solid var(--callout-border);
+      border-radius: var(--radius-lg);
+      background: var(--callout-bg);
+      color: var(--callout-text);
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+
+    .callout .icon-lg {
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ---------- Cards grid ---------- */
+
+    .approach-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .approach-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      transition: border-color 0.15s ease;
+    }
+
+    .approach-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .approach-badge {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-subtle);
+    }
+
+    .approach-title {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .approach-desc {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    /* ---------- Tables ---------- */
+
+    .doc-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+      margin-bottom: 24px;
+      background: var(--bg-card);
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .doc-table th {
+      text-align: left;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .doc-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .doc-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ---------- Code blocks ---------- */
+
+    .code-container {
+      margin-bottom: 24px;
+      border: 1px solid var(--code-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--bg-code);
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      height: 44px;
+      padding: 0 8px 0 16px;
+      background: var(--code-header);
+      border-bottom: 1px solid var(--code-border);
+    }
+
+    .code-header > span {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: #a1a1aa;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 8px;
+      background: transparent;
+      color: #999999;
+      font-size: 12px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .btn-copy.copied {
+      color: #50e3c2;
+    }
+
+    .code-body pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .code-body code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      color: #ededed;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      white-space: pre;
+    }
+
+    .tok-c {
+      color: #737373;
+    }
+
+    /* ---------- Prev / next pagination ---------- */
+
+    .page-nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .page-nav-card {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: border-color 0.15s ease;
+    }
+
+    .page-nav-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .page-nav-sub {
+      font-size: 12px;
+      color: var(--text-subtle);
+    }
+
+    .page-nav-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ---------- Right TOC ---------- */
+
+    .toc-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .toc-title .icon {
+      display: none;
+    }
+
+    .toc-list {
+      list-style: none;
+      position: relative;
+      margin-left: 2px;
+      border-left: 1px solid var(--border);
+    }
+
+    .toc-link {
+      display: block;
+      position: relative;
+      padding: 5px 0 5px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .toc-link:hover {
+      color: var(--text);
+    }
+
+    .toc-link.active {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .toc-link.active::before {
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      border-radius: 2px;
+      background: var(--text);
+    }
+
+    .toc-community-box {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toc-community-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .toc-community-link:hover {
+      color: var(--text);
+    }
+
+    /* ---------- Search modal ---------- */
+
+    .search-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 15vh 16px 16px;
+      background: rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .search-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .search-modal {
+      width: 100%;
+      max-width: 560px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.24);
+      animation: search-modal-in 0.15s ease;
+    }
+
+    @keyframes search-modal-in {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .search-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 52px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-subtle);
+    }
+
+    .search-modal-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 14.5px;
+      color: var(--text);
+    }
+
+    .search-modal-input::placeholder {
+      color: var(--text-subtle);
+    }
+
+    .search-results-list {
+      list-style: none;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .search-result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .search-result-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .search-result-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .search-result-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ---------- Changelog releases ---------- */
+
+    .release-box {
+      scroll-margin-top: calc(var(--header-total-h) + 24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .release-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .release-tag-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: var(--primary);
+      color: var(--text-inverse);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .release-date {
+      font-size: 13px;
+      color: var(--text-subtle);
+    }
+
+    .release-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-top: 6px;
+    }
+
+    .release-section {
+      margin-bottom: 16px;
+    }
+
+    .release-section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .release-section-title .icon {
+      color: var(--text-subtle);
+    }
+
+    .release-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .release-list li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .release-list li::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 0.62em;
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--border-hover);
+    }
+
+    .release-list li strong {
+      color: var(--text);
+    }
+
+    /* ---------- Responsive ---------- */
+
+    @media (max-width: 1100px) {
+      .docs-toc {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .brand-badge { display: none; }
+      .mobile-sidebar-toggle { display: flex; }
+      .search-trigger {
+        flex: 1;
+        min-width: 0;
+        max-width: none;
+      }
+      .docs-layout {
+        padding: 0;
+      }
+      .docs-sidebar {
+        position: fixed;
+        top: var(--header-total-h);
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        height: auto;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        z-index: 40;
+        padding: 20px 16px 32px 24px;
+      }
+      .docs-sidebar.open {
+        transform: translateX(0);
+      }
+      .docs-main {
+        max-width: none;
+        padding: 28px 20px 72px;
+      }
+      .doc-h1 {
+        font-size: 30px;
+      }
+      .approach-grid,
+      .page-nav-grid {
+        grid-template-columns: 1fr;
+      }
+      .release-header {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .btn-top-download {
+        display: none;
+      }
+      .search-kbd {
+        display: none;
+      }
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- ==================== STICKY DOUBLE-ROW HEADER ==================== -->
+  <header class="nav-header">
+    <div class="nav-header-inner">
+      <div class="brand-group">
+        <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" onclick="toggleMobileSidebar()" aria-label="Toggle navigation menu" title="Toggle menu">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <a href="../" class="brand-logo-link" aria-label="OmniGet Home">
+          <img src="../static/loop.png" alt="OmniGet Logo" />
+          <span>OmniGet</span>
+        </a>
+        <span class="brand-badge">DOCS</span>
+      </div>
+
+      <div class="search-trigger" onclick="openSearchModal()">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34" />
+  <circle cx="11" cy="11" r="8" /></svg>
+          <span>Search docs...</span>
+        </span>
+        <kbd class="search-kbd">Ctrl K</kbd>
+      </div>
+
+      <nav class="nav-links">
+        <a class="nav-link-item active" href="./">Overview</a>
+        <a class="nav-link-item" href="./installation/">Installation</a>
+        <a class="nav-link-item" href="./courses/">Courses</a>
+        <a class="nav-link-item" href="./opennami/">OpenNami</a>
+        <a class="nav-link-item" href="./mcp/">MCP & AI</a>
+        <a class="nav-link-item" href="./troubleshooting/">Fixes</a>
+        <a class="nav-link-item" href="./changelog/">Changelog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle light and dark mode" title="Toggle theme">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconSun" style="display: none;"><circle cx="12" cy="12" r="4" />
+  <path d="M12 2v2" />
+  <path d="M12 20v2" />
+  <path d="m4.93 4.93 1.41 1.41" />
+  <path d="m17.66 17.66 1.41 1.41" />
+  <path d="M2 12h2" />
+  <path d="M20 12h2" />
+  <path d="m6.34 17.66-1.41 1.41" />
+  <path d="m19.07 4.93-1.41 1.41" /></svg>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIconMoon"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></svg>
+        </button>
+
+        <a class="btn-top-download" href="https://github.com/OpenSelena/omniget/releases/latest">
+          <span>Get App</span>
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" />
+  <path d="m12 5 7 7-7 7" /></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="nav-subtabs">
+      <div class="nav-subtabs-inner" id="topSubtabs">
+        <a href="./" class="subtab-item active">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09" />
+  <path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z" />
+  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" /></svg>
+          <span>Quickstart</span>
+        </a>
+        <a href="./installation/" class="subtab-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3" />
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+  <path d="m7 10 5 5 5-5" /></svg>
+          <span>Installation</span>
+        </a>
+        <a href="./mcp/" class="subtab-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v2" />
+  <path d="M12 2v2" />
+  <path d="M17 20v2" />
+  <path d="M17 2v2" />
+  <path d="M2 12h2" />
+  <path d="M2 17h2" />
+  <path d="M2 7h2" />
+  <path d="M20 12h2" />
+  <path d="M20 17h2" />
+  <path d="M20 7h2" />
+  <path d="M7 20v2" />
+  <path d="M7 2v2" />
+  <rect x="4" y="4" width="16" height="16" rx="2" />
+  <rect x="8" y="8" width="8" height="8" rx="1" /></svg>
+          <span>MCP Server</span>
+        </a>
+        <a href="./courses/" class="subtab-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+  <path d="M22 10v6" />
+  <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></svg>
+          <span>36 Course Platforms</span>
+        </a>
+        <a href="./opennami/" class="subtab-item">
+          <svg class="icon icon-fill" viewBox="0 0 24 24" fill="currentColor"><title>Instagram</title><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg>
+          <span>OpenNami</span>
+        </a>
+        <a href="./changelog/" class="subtab-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="9" /></svg>
+          <span>Changelog</span>
+        </a>
+        <a href="./troubleshooting/" class="subtab-item">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" /></svg>
+          <span>Troubleshooting</span>
+        </a>
+      </div>
+    </div>
+  </header>
+  <div class="mobile-sidebar-backdrop" id="mobileSidebarBackdrop" onclick="closeMobileSidebar()"></div>
+
+  <!-- ==================== THREE-COLUMN LAYOUT ==================== -->
+  <div class="docs-layout">
+    <aside class="docs-sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" />
+  <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /></svg>
+          <span>Overview</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="./" class="sidebar-link active">
+              <span>Quickstart Guide</span>
+              <span class="sidebar-tag">Start</span>
+            </a>
+          </li>
+          <li>
+            <a href="./installation/" class="sidebar-link">
+              <span>Installation Packages</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+  <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
+  <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></svg>
+          <span>Core Engines</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="./opennami/" class="sidebar-link">
+              <span>OpenNami Engine</span>
+              <span class="sidebar-tag">Social</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16" />
+  <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></svg>
+          <span>Courses &amp; Study</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="./courses/" class="sidebar-link">
+              <span>36 Course Platforms</span>
+              <span class="sidebar-tag">v0.14.0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="9" /></svg>
+          <span>Changelog &amp; Releases</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="./changelog/" class="sidebar-link">
+              <span>Dedicated Changelog</span>
+              <span class="sidebar-tag">Latest</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+  <path d="M20 2v4" />
+  <path d="M22 4h-4" />
+  <circle cx="4" cy="20" r="2" /></svg>
+          <span>AI &amp; Agent Bridge</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="./mcp/" class="sidebar-link">
+              <span>MCP Server (127.0.0.1)</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" /></svg>
+          <span>System &amp; Fixes</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="./troubleshooting/" class="sidebar-link">
+              <span>Troubleshooting Hub</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-header">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+  <polyline points="15 3 21 3 21 9" />
+  <line x1="10" y1="14" x2="21" y2="3" /></svg>
+          <span>Community &amp; Source</span>
+        </div>
+        <ul class="sidebar-nav-list">
+          <li>
+            <a href="https://github.com/OpenSelena/omniget" target="_blank" rel="noopener" class="sidebar-link">
+              <span>GitHub Repository</span>
+              <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; opacity: 0.5;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://t.me/omniget" target="_blank" rel="noopener" class="sidebar-link">
+              <span>Telegram Community</span>
+              <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; opacity: 0.5;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="docs-main">
+      <div class="breadcrumbs">
+        <a href="./">Documentation</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Quickstart Guide</span>
+      </div>
+
+      <h1 class="doc-h1">OmniGet Quickstart Guide</h1>
+      <p class="doc-lead">Download online courses, video, audio, image galleries and torrents from 1,800+ sites, then read, transcribe and study what you saved. Windows, macOS and Linux.</p>
+
+
+      <div class="doc-media-card">
+        <img src="../assets/readme/home.png" alt="OmniGet Desktop Home Interface" />
+        <div class="doc-media-caption">OmniGet Desktop: Paste a link, magnet, or course URL to inspect qualities, audio streams, and start downloading.</div>
+      </div>
+
+      <p class="doc-p">
+        <strong>OmniGet</strong> is a free, open-source desktop app (GPL-3.0) for Windows, macOS and Linux. It downloads from 1,800+ sites, with native extractors for paid courses and social platforms, an offline study library, and a local Model Context Protocol (MCP) server that AI agents can drive.
+      </p>
+
+      <div class="approach-grid">
+        <div class="approach-card">
+          <span class="approach-badge">Visual Desktop GUI</span>
+          <h3 class="approach-title">Desktop app</h3>
+          <p class="approach-desc">One download box, speed and ETA while it runs, an offline video/audio player, and 158 built-in tools.</p>
+        </div>
+
+        <div class="approach-card">
+          <span class="approach-badge">Local MCP Bridge</span>
+          <h3 class="approach-title">Local MCP server</h3>
+          <p class="approach-desc">Exposes 37 local tools over <code>127.0.0.1:47720</code> to Claude Code, Cursor, and VS Code for automated downloading and transcription.</p>
+        </div>
+
+        <div class="approach-card">
+          <span class="approach-badge">Zero-Install USB</span>
+          <h3 class="approach-title">Standalone Portable Mode</h3>
+          <p class="approach-desc">Create <code>portable.txt</code> next to the Windows executable to isolate all SQLite databases, cookies, and tools onto a USB stick.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 2px;"><circle cx="12" cy="12" r="10" />
+  <path d="M12 16v-4" />
+  <path d="M12 8h.01" /></svg>
+        <div>
+          <strong>Version 0.14.0 Release Update:</strong>
+          Introduced Offline Study module with SQLite tracking, eliminated BitTorrent 99% stall with real-time speed metrics, upgraded Skool &amp; Udemy extractors, and localized Open Nami.
+        </div>
+      </div>
+
+      <!-- SECTION 1 -->
+      <h2 class="doc-h2" id="first-download">1. Quickstart & First Download Walkthrough</h2>
+      <p class="doc-p">
+        OmniGet sets itself up on first launch:
+      </p>
+      
+      <ol style="margin-left: 20px; color: var(--text-muted); display: grid; gap: 12px; margin-bottom: 24px; font-size: 14.5px; line-height: 1.6;">
+        <li>
+          <strong>Automatic Engine Verification:</strong> On initial launch, OmniGet asks for your preferred language and theme, then verifies or fetches <code>yt-dlp</code> and <code>FFmpeg</code> against strict cryptographic SHA-256 checksums before anything executes. If Python 3.10+ is detected on your system, yt-dlp runs as a zipapp, starting in under one second.
+        </li>
+        <li>
+          <strong>Paste Any Link:</strong> Copy any media URL to your clipboard (a YouTube video, Instagram reel, TikTok post, X thread, Pinterest board, Bilibili series, magnet link, or .torrent file). Paste it into the main input box. (For enrolled e-learning courses, navigate to the dedicated <strong>Courses</strong> workspace with your active login session).
+        </li>
+        <li>
+          <strong>Inspect Streams & Choose Quality:</strong> OmniGet probes the destination server and renders available streams: choose from <strong>4K HDR</strong>, <strong>1080p60</strong>, <strong>AV1/VP9/H.264</strong>, or extract pure audio directly as <strong>MP3</strong>, <strong>M4A</strong>, <strong>Opus</strong>, or lossless <strong>FLAC</strong>.
+        </li>
+        <li>
+          <strong>Download and watch:</strong> the Downloads panel shows live speed, phase and ETA. Interrupted downloads resume where they stopped, and rate-limited sites are retried with backoff.
+        </li>
+      </ol>
+
+      <div class="doc-media-card">
+        <img src="../assets/readme/downloads.png" alt="OmniGet Downloads Manager" />
+        <div class="doc-media-caption">OmniGet Downloads Manager: live speed, phase and ETA, plus the exact yt-dlp command each download ran.</div>
+      </div>
+
+      <!-- SECTION 2 -->
+      <h2 class="doc-h2" id="global-hotkeys">2. Global Hotkeys & Background Capture</h2>
+      <p class="doc-p">
+        You don't need to keep the OmniGet window in the foreground. Once enabled in <strong>Settings &rarr; Downloads &rarr; Clipboard & hotkeys</strong>, system-wide keyboard shortcuts trigger instant background downloads:
+      </p>
+
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Shortcut (Windows / Linux)</th>
+              <th>Shortcut (macOS)</th>
+              <th>Action Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Ctrl + Shift + D</code></td>
+              <td><code>Cmd + Shift + D</code></td>
+              <td>Reads the active clipboard URL and queues the highest available video quality silently in the background.</td>
+            </tr>
+            <tr>
+              <td><code>Ctrl + Shift + M</code></td>
+              <td><code>Cmd + Shift + M</code></td>
+              <td>Extracts audio-only (converts YouTube or social links directly to MP3) without opening the main window.</td>
+            </tr>
+            <tr>
+              <td><code>Ctrl + K</code></td>
+              <td><code>Cmd + K</code></td>
+              <td>Opens the command palette to jump to any tool, setting, or the download queue.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="doc-media-card">
+        <img src="../assets/readme/global-hotkey.png" alt="OmniGet Global Hotkeys" />
+        <div class="doc-media-caption">Global hotkey setup: Configure custom key bindings for instant background clipboard capture and audio conversion.</div>
+      </div>
+
+      <!-- SECTION 3 -->
+      <h2 class="doc-h2" id="comparison">3. Technical Comparison Matrix</h2>
+      <p class="doc-p">
+        How OmniGet compares against raw command-line tools, single-site web downloaders, and paid commercial course downloaders:
+      </p>
+
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Feature Axis</th>
+              <th>OmniGet</th>
+              <th>yt-dlp CLI Alone</th>
+              <th>Single-Site Web Tools</th>
+              <th>Paid Course Tools</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Supported Sites</strong></td>
+              <td><strong>1,800+ sites</strong> + 36 Courses, Instagram, X, Pinterest, Bilibili, Torrents</td>
+              <td>1,800+ sites</td>
+              <td>1 site only</td>
+              <td>1 or 2 platforms</td>
+            </tr>
+            <tr>
+              <td><strong>Setup Experience</strong></td>
+              <td><strong>One executable</strong>, auto-manages yt-dlp, FFmpeg & whisper.cpp</td>
+              <td>Manual Python, PATH, FFmpeg flags</td>
+              <td>None (browser)</td>
+              <td>Installer + license key</td>
+            </tr>
+            <tr>
+              <td><strong>Authenticated Content</strong></td>
+              <td><strong>Companion Extension</strong> forwards session cookies in 1 click</td>
+              <td>Manual <code>--cookies</code> text export</td>
+              <td>Rarely supported</td>
+              <td>In-app browser login</td>
+            </tr>
+            <tr>
+              <td><strong>Queue & Resilience</strong></td>
+              <td><strong>Resume, retry with backoff</strong>, up to 16 parallel fragments</td>
+              <td>1 command at a time</td>
+              <td>No queue</td>
+              <td>Varies</td>
+            </tr>
+            <tr>
+              <td><strong>Post-Download Hub</strong></td>
+              <td><strong>Study workspace</strong>, player, reader, Anki cards, 158 tools</td>
+              <td>Raw files on disk</td>
+              <td>Files, often re-encoded</td>
+              <td>Raw folder</td>
+            </tr>
+            <tr>
+              <td><strong>Pricing & License</strong></td>
+              <td><strong>100% Free & Open Source (GPL-3.0)</strong></td>
+              <td>Free (Unlicense)</td>
+              <td>Ad-supported / rate limited</td>
+              <td>$40 - $120 / year subscription</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 4 -->
+      <h2 class="doc-h2" id="media-spectrum">4. Supported Media Engines & 1,800+ Sites</h2>
+      <p class="doc-p">
+        OmniGet uses native extractors for the platforms that need a login, and yt-dlp for everything else:
+      </p>
+
+      <ul style="margin-left: 20px; color: var(--text-muted); display: grid; gap: 10px; margin-bottom: 24px; font-size: 14.5px; line-height: 1.6;">
+        <li><strong>Online courses (36 platforms):</strong> Hotmart, Udemy, Kiwify, Skool, Gumroad, Rocketseat, Teachable, Kajabi, Thinkific, Pluralsight, The Great Courses (Wondrium), MasterClass, MemberKit, Cakto, Curseduca, Data Science Academy, Estratégia Concursos, Gran Cursos Online, Fluency Academy, Eduzz Nutror, and more. Keeps the course structure and downloads attachments.</li>
+        <li><strong>Video & Audio Streaming:</strong> YouTube (videos, playlists, channels, SponsorBlock skip, Return YouTube Dislike, live streams from start, Force H.264 switch), TikTok, Instagram, X, Reddit, Twitch (VODs, clips, live), Vimeo, Bluesky, Threads, Douyin.</li>
+        <li><strong>Bilibili (Authenticated Hi-Fi):</strong> 4K, HDR, Dolby Vision, Dolby Atmos, and Hi-Res lossless audio via your VIP session. Exports danmaku comments as XML/ASS and generates Kodi/Jellyfin NFO metadata.</li>
+        <li><strong>Image Galleries (250+ Sites):</strong> Full artist profile and gallery downloads via gallery-dl integration (Pixiv, DeviantArt, ArtStation, Flickr, Tumblr, Kemono, Imgur).</li>
+        <li><strong>Torrents & P2P Transfer:</strong> Built-in BitTorrent client powered by librqbit handles <code>.torrent</code> files and magnet links. Direct peer-to-peer computer transfer with short word codes.</li>
+        <li><strong>Telegram Channel Archiver:</strong> The embedded OmniGram plugin downloads photos, videos, audio, and documents from any group you belong to into structured folders (<code>OmniGram/&lt;channel&gt;/</code>).</li>
+      </ul>
+
+      <div class="doc-media-card">
+        <img src="../assets/readme/workflow.png" alt="OmniGet Architectural Workflow" />
+        <div class="doc-media-caption">How OmniGet works: each link goes to a native extractor or yt-dlp, streams are downloaded and merged locally, and the result is filed in your library.</div>
+      </div>
+
+      <!-- SECTION 5 -->
+      <h2 class="doc-h2" id="study-ecosystem">5. Study & Offline Workspace</h2>
+      <p class="doc-p">
+        Downloading is only the start. The built-in <strong>Study module</strong> finishes what you download:
+      </p>
+
+      <div class="approach-grid">
+        <div class="approach-card">
+          <span class="approach-badge">Video Player</span>
+          <h3 class="approach-title">Timestamped Notes</h3>
+          <p class="approach-desc">Resumes playback to the second. Press <strong>N</strong> while watching to capture an annotated note that jumps back to that timestamp when clicked.</p>
+        </div>
+
+        <div class="approach-card">
+          <span class="approach-badge">Multi-Format Reader</span>
+          <h3 class="approach-title">E-Book & PDF Studio</h3>
+          <p class="approach-desc">Read PDF, EPUB, DJVU, MOBI, AZW3, FB2, and CBZ with paper-like themes, text highlights, bookmarks, and font controls.</p>
+        </div>
+
+        <div class="approach-card">
+          <span class="approach-badge">Spaced Repetition</span>
+          <h3 class="approach-title">Anki Flashcard Engine</h3>
+          <p class="approach-desc">Turn any video note or book highlight into a flashcard. Supports importing <code>.apkg</code> and CSV decks with full review logs.</p>
+        </div>
+      </div>
+
+      <div class="doc-media-card">
+        <img src="../assets/readme/illustration-study.png" alt="OmniGet Study Ecosystem" />
+        <div class="doc-media-caption">The Study ecosystem: Course video player, EPUB/PDF reader, Anki-compatible flashcard decks, and Pomodoro focus timer.</div>
+      </div>
+
+      <!-- SECTION 6 -->
+      <h2 class="doc-h2" id="tools-hub">6. The 158 Offline Tools Hub</h2>
+      <p class="doc-p">
+        OmniGet bundles 158 tools across 25 categories. Each tool is one Rust command, JSON in and JSON out:
+      </p>
+
+      <div class="doc-media-card">
+        <img src="../assets/readme/tools.png" alt="158 Offline Tools Hub" />
+        <div class="doc-media-caption">The 158 Tools Hub: Fast multilingual search, platform filtering, and native offline execution.</div>
+      </div>
+
+      <ul style="margin-left: 20px; color: var(--text-muted); display: grid; gap: 8px; margin-bottom: 24px; font-size: 14.5px;">
+        <li><strong>Speech & Subtitles:</strong> Offline whisper.cpp transcription, Microsoft Edge neural TTS, subtitle translation, and bilingual subtitle merging.</li>
+        <li><strong>Video Editing:</strong> Lossless video trimming, two-pass target size compression (e.g. 10MB Discord limits), video-to-GIF, silence cutting, video stabilization.</li>
+        <li><strong>PDF & Documents:</strong> Merge, split, compress, repair corrupted PDFs, Bates-numbering, redaction verification, and PDF-to-Markdown conversion for LLMs.</li>
+        <li><strong>Images:</strong> Vulkan GPU upscaling (Real-ESRGAN), batch resizing, duplicate photo detection, screenshot stitching, and spritesheet slicing.</li>
+        <li><strong>System & Privacy:</strong> Cache cleaner, disk treemap analyzer, hosts file ad-blocking, Windows privacy hardening, and duplicate file hash finder.</li>
+        <li><strong>CTF & Cryptography:</strong> Hash & HMAC identification, file entropy analysis, Caesar/Vigenère/XOR cracking, and base64/hex multi-decoders.</li>
+      </ul>
+
+      <p class="doc-p">
+        Press <code>Ctrl + K</code> (or <code>Cmd + K</code> on macOS) anywhere in the app to open the command palette, search, and run any tool.
+      </p>
+
+      <!-- SECTION 7 -->
+      <h2 class="doc-h2" id="privacy"><span id="architecture"></span>7. Privacy Policy &amp; No Tracking</h2>
+      <p class="doc-p">
+        OmniGet is an offline-first desktop app. It runs locally on your workstation with no user accounts, no cloud backend, and no central servers collecting your activity.
+      </p>
+
+      <div class="doc-media-card" style="max-width: 580px; margin: 24px auto;">
+        <img src="../assets/readme/illustration-privacy.png" alt="OmniGet Offline Privacy Boundary" />
+        <div class="doc-media-caption">Local machine boundary: Downloads, database records, and session tokens remain on your computer.</div>
+      </div>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">No Telemetry &amp; Analytics</h3>
+      <p class="doc-p">
+        The app has no analytics, crash reporters, or usage trackers. When you paste a link, search for streams, or run a download, nothing is reported back:
+      </p>
+      <ul style="margin-left: 20px; color: var(--text-muted); display: grid; gap: 8px; margin-bottom: 20px; font-size: 14.5px; line-height: 1.6;">
+        <li>No telemetry or heartbeat requests.</li>
+        <li>No URL logging: links, video titles, and download paths stay on your machine.</li>
+        <li>No analytics SDKs: built without Google Analytics, Sentry, Firebase, Mixpanel, Datadog, or PostHog.</li>
+        <li>No ads, sponsored links, or hidden cryptominers.</li>
+      </ul>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Local Storage &amp; User Data Ownership</h3>
+      <p class="doc-p">
+        All settings and download records are saved directly to your operating system's standard application directory:
+      </p>
+
+      <div class="callout">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 2px;"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <div>
+          <strong>Local Application Data Paths:</strong>
+          <ul style="list-style: none; display: grid; gap: 6px; margin-top: 6px; font-family: var(--font-mono); font-size: 13px;">
+            <li><strong>Windows:</strong> <code>%APPDATA%\com.openselena.omniget\</code> (or a <code>data</code> folder next to the executable if <code>portable.txt</code> exists)</li>
+            <li><strong>macOS:</strong> <code>~/Library/Application Support/com.openselena.omniget/</code></li>
+            <li><strong>Linux:</strong> <code>~/.local/share/com.openselena.omniget/</code> (or <code>$XDG_DATA_HOME/com.openselena.omniget/</code>)</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="doc-p">
+        Within these paths, OmniGet maintains:
+      </p>
+      <ul style="margin-left: 20px; color: var(--text-muted); display: grid; gap: 8px; margin-bottom: 20px; font-size: 14.5px; line-height: 1.6;">
+        <li><code>omniget.db</code>: SQLite database storing download history, file paths, media titles, custom tags, and notes.</li>
+        <li><code>settings.json</code>: Configuration preferences (download directories, concurrent stream limits, speed limits, theme).</li>
+        <li><code>cache/</code>: Temporary thumbnail previews and active download fragments.</li>
+      </ul>
+      <p class="doc-p">
+        <strong>Data Deletion:</strong> You can clear your download history in the app, or by deleting the <code>omniget.db</code> file from disk while OmniGet is closed.
+      </p>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Direct Downloads (No Proxy Relays)</h3>
+      <p class="doc-p">
+        When downloading or inspecting media, connections go directly between your computer and the media host's CDN (such as YouTube, Vimeo, Instagram, TikTok, or course servers). OpenSelena runs no proxy servers, relays, or stream reflectors. The destination servers receive your IP address and standard HTTP request headers, similar to opening the page in a browser.
+      </p>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Browser Extension &amp; Session Cookies</h3>
+      <p class="doc-p">
+        The companion extension communicates with OmniGet Desktop strictly over local loopback (<code>http://127.0.0.1:47720</code> to <code>47729</code>). It never connects to the internet. Handshakes require a local session token from the running desktop app. Forwarded session cookies are encrypted locally on disk and used only by native extractors. They are never sent to external servers.
+      </p>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Local MCP Server Security</h3>
+      <p class="doc-p">
+        The built-in MCP server binds strictly to <code>127.0.0.1</code>. It rejects connections from outside your machine. Local AI tools (Claude Desktop, Cursor, local LLMs) interact with tools directly on your computer without sending prompts or transcripts to OpenSelena.
+      </p>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">DRM Policy</h3>
+      <p class="doc-p">
+        OmniGet does not crack, decrypt, or bypass DRM protections like Widevine, FairPlay, or PlayReady. When an encrypted stream is detected, OmniGet stops extraction and skips the stream.
+      </p>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Outbound Network Request Matrix</h3>
+      <p class="doc-p">
+        The following table details every outbound network request that OmniGet can initiate:
+      </p>
+
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Destination</th>
+              <th>Purpose</th>
+              <th>Data Transmitted</th>
+              <th>Trigger Condition</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Origin Media CDNs</strong><br /><small>(YouTube, Vimeo, etc.)</small></td>
+              <td>Retrieve media streams, format manifests, and fragments.</td>
+              <td>Target URL, HTTP Range headers, local session cookies (if authenticated).</td>
+              <td>Only upon user-initiated download or inspection action.</td>
+            </tr>
+            <tr>
+              <td><strong>GitHub API</strong><br /><code>api.github.com/repos/OpenSelena/...</code></td>
+              <td>Check for newer releases and security patches.</td>
+              <td>Standard HTTP User-Agent and client architecture (e.g. <code>OmniGet/0.14.0 x86_64</code>).</td>
+              <td>On startup (can be disabled in Settings).</td>
+            </tr>
+            <tr>
+              <td><strong>OpenStreetMap Nominatim</strong><br /><small>(Optional diagnostic)</small></td>
+              <td>Resolve server location in the Network Tools tab.</td>
+              <td>Selected target host/IP query string.</td>
+              <td>Only if user manually runs the GeoIP Lookup tool.</td>
+            </tr>
+            <tr>
+              <td><strong>OpenSelena Servers</strong></td>
+              <td><strong>None.</strong> We operate zero telemetry, tracking, or proxy servers.</td>
+              <td><strong>None.</strong></td>
+              <td><strong>Never.</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Open Source Verification</h3>
+      <p class="doc-p">
+        OmniGet is licensed under GPL-3.0. The full source code is public on <a href="https://github.com/OpenSelena/omniget" target="_blank" rel="noopener">GitHub</a>. You can inspect all network and database code directly, or verify that the app sends no telemetry by monitoring network traffic with Wireshark, Fiddler, or mitmproxy.
+      </p>
+      <div style="background: rgba(255, 125, 56, 0.08); border-left: 3px solid #FF7D38; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13.5px; line-height: 1.6; color: var(--text);">
+        <strong>Disclaimer:</strong> Maintained by <a href="https://github.com/igect" target="_blank" rel="noopener">Igect</a> under GPL-3.0 · Based on original architecture by <a href="https://github.com/tonhowtf" target="_blank" rel="noopener">tonhowtf</a>.
+      </div>
+
+      <h3 id="code-signing-policy" style="font-size: 16px; font-weight: 600; margin: 28px 0 12px; color: var(--text);">Code signing policy</h3>
+      <p class="doc-p">
+        Free code signing provided by <a href="https://about.signpath.io" target="_blank" rel="noopener">SignPath.io</a>, certificate by <a href="https://signpath.org" target="_blank" rel="noopener">SignPath Foundation</a>. Code changes and signed releases are reviewed and approved by the OpenSelena maintainers.
+      </p>
+
+      <!-- SECTION 8 -->
+      <h2 class="doc-h2" id="cli-reference">8. omniget-cli Command Reference</h2>
+      <p class="doc-p">
+        Every release includes the headless <code>omniget-cli</code> binary for terminal workflows, automated scripts, and CI runners:
+      </p>
+
+      <div class="code-container">
+        <div class="code-header">
+          <span style="font-size: 13px; font-weight: 600; color: #a1a1aa;">Terminal</span>
+          <button class="btn-copy" onclick="copyCodeSnippet(this)"><svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg><span>Copy</span></button>
+        </div>
+        <div class="code-body">
+<pre><code><span class="tok-c"># Download video or audio:
+</span>omniget-cli download "https://www.youtube.com/watch?v=..." --audio-only
+
+<span class="tok-c"># Preview what a URL offers without downloading:
+</span>omniget-cli info "https://www.youtube.com/watch?v=..."
+
+<span class="tok-c"># Download a list of URLs from a file:
+</span>omniget-cli batch ./urls.txt --max-concurrent 3 --output ~/Downloads
+
+<span class="tok-c"># Import a cookies.txt file (Netscape format):
+</span>omniget-cli import-cookies ./cookies.txt --name firefox</code></pre>
+        </div>
+      </div>
+
+      <!-- SECTION 9 -->
+      <h2 class="doc-h2" id="whisper-models">9. Whisper Model Management & Speech Studio</h2>
+      <p class="doc-p">
+        OmniGet's Speech & Subtitles engine bundles <code>whisper.cpp</code> for local GPU/CPU speech-to-text. Models are stored in <code>%APPDATA%\OmniGet\models\</code> on Windows and <code>~/.config/OmniGet/models/</code> on macOS/Linux:
+      </p>
+
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Model Variant</th>
+              <th>Disk Size</th>
+              <th>RAM / VRAM Required</th>
+              <th>Recommended Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tiny</code> / <code>tiny.en</code></td>
+              <td>75 MB</td>
+              <td>~390 MB</td>
+              <td>Fastest draft transcription on low-spec laptops and battery power.</td>
+            </tr>
+            <tr>
+              <td><code>base</code> / <code>base.en</code> (Default)</td>
+              <td>142 MB</td>
+              <td>~500 MB</td>
+              <td>Balanced accuracy and speed for YouTube videos, podcasts, and clear speech.</td>
+            </tr>
+            <tr>
+              <td><code>small</code></td>
+              <td>466 MB</td>
+              <td>~1.0 GB</td>
+              <td>High accuracy across accented English and general multilingual speech.</td>
+            </tr>
+            <tr>
+              <td><code>medium</code></td>
+              <td>1.5 GB</td>
+              <td>~2.6 GB</td>
+              <td>Professional transcription for technical lectures and noisy environments.</td>
+            </tr>
+            <tr>
+              <td><code>large-v3</code></td>
+              <td>3.1 GB</td>
+              <td>~4.7 GB</td>
+              <td>Maximum multilingual precision, music lyrics, and low-fidelity audio recordings.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 10: CHANGELOG & RELEASES -->
+      <h2 class="doc-h2" id="changelog">10. Official Release Notes &amp; Changelog</h2>
+      <p class="doc-p">
+        Track every update and bugfix shipped in OmniGet. OmniGet follows Semantic Versioning and publishes signed artifacts with SHA-256 checksums for every desktop release.
+      </p>
+
+            <!-- v0.14.0 Release -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--primary); color: var(--text-inverse); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.14.0 Stable</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Released October 2026</span>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 6px;">Offline Study Module, BitTorrent Telemetry &amp; Course Platform Upgrades</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.14.0" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div style="display: grid; gap: 18px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              Offline Study Module (omniget-plugin-study)
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Native SQLite-backed progress tracking and course structure indexing.</li>
+              <li>Filesystem scanning for downloaded video and document curriculum folders.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              BitTorrent 99% Completion Stall Fix &amp; Telemetry
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Eliminated 99% stall bug during piece verification; deterministic completion to 100%.</li>
+              <li>Added real-time speed (bps/MB/s) and remaining bytes counters to torrent downloads.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              Course Extractors &amp; Hardening
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Fixed Skool lesson resolution (#94) and handled empty Udemy courses (#72).</li>
+              <li>Hardened yt-dlp parameter validation and updated core toolchains.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v0.13.0 Release -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.13.0</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Released October 2026</span>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 6px;">YouTube Stream Muxing, FFmpeg Auto-Download &amp; MosCat Navigation</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.13.0" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div style="display: grid; gap: 18px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              YouTube Stream Muxing &amp; FFmpeg Auto-Download (Fixes #54)
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Muxes separate 1080p, 1440p, and 4K video and audio streams into unified MP4 files.</li>
+              <li>Automatically verifies and downloads FFmpeg to cache if missing from host PATH.</li>
+              <li>Adds desktop launcher search paths and macOS ad-hoc binary signing for cache binaries.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings UI Polish &amp; MosCat Navigation
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Dedicated header descriptions for all Settings tabs with 12-locale translations.</li>
+              <li>Custom MosCat navigation vector icons in the application shell.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Dependency &amp; Security Audits
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Bumped Svelte to 5.57.2 and Vite to 6.4.4. Fixed Facebook URL decoding.</li>
+              <li>Overrode devalue and markdown-it versions: 0 open Dependabot or CodeQL alerts.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v0.12.2 Release -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.12.2</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Released October 2026</span>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 6px;">Telegram Core Sync, Cross-DC Bot Avatars &amp; Full 12-Locale Parity</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.12.2" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div style="display: grid; gap: 18px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Telegram Plugin Command Handlers &amp; Outdated Alert Prevention
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Registered all missing plugin command handlers for participant listings, account management, and clone wizards, completely eliminating <code>ERR_PLUGIN_OUTDATED</code> alerts.</li>
+              <li>Added safe fallback error handling in the Channel Drawer members tab, Account Panel, and Clone Wizard to handle restricted channels smoothly.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Live Dialog Synchronization &amp; Reactive UI Refresh
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Connected <code>telegram_sync_now</code> to fetch live dialogs and return real synchronized channel counts rather than a zero stub.</li>
+              <li>Dispatched an automatic <code>telegram:chats:refresh</code> event on sync completion so the chat list updates immediately without requiring a page reload.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              Cross-DC Bot Avatars &amp; Full 12-Locale Parity
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Resolved Telegram MTProto cross-DC migration (error 303 <code>FILE_MIGRATE</code>) by streaming avatar downloads via native client iteration with automated multi-DC routing.</li>
+              <li>Rendered circular chat photos in the Channel Drawer header with graceful initial letter fallbacks.</li>
+              <li>Localized the channel management button across all 12 supported locales, enforcing 100% dictionary key parity (7,444 keys).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v0.12.1 Release -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.12.1</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Released October 2026</span>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 6px;">Global Update Notification Banner &amp; Dependencies Table Alignment</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.12.1" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div style="display: grid; gap: 18px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+              Global App Update Notification System
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Added a persistent yet dismissible top update banner across all views, ensuring newly available releases are immediately noticeable without opening Settings.</li>
+              <li>Added a live accent-colored <code>UPDATE</code> indicator badge on the Settings sidebar navigation item.</li>
+              <li>Centralized update state and action orchestration across the entire desktop application shell.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Dependencies Management UI &amp; Version Sanitization
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Resolved PDFium version marker parsing defect in the core engine, extracting clean build numbers (e.g. <code>v8076</code>) from upstream key-value lines.</li>
+              <li>Eliminated action button line wrapping on dependency rows with fixed table layouts and compact dropdown selections.</li>
+              <li>Ensured consistent vertical and horizontal alignment across PDFium, yt-dlp, and FFmpeg rows.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v0.11.0 Release -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.11.0</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Release &bull; October 2026</span>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 6px;">36 Course Platforms Wired &amp; Security Protocol Hardening</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.11.0" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div style="display: grid; gap: 18px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              36 Course Platforms Wired &amp; Platform Dispatcher
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Connected all 36 supported platforms directly to the <code>download_course_platform</code> dispatcher.</li>
+              <li>Added native authentication and Udemy course listing handlers inside the embedded <code>CoursesPlugin</code>.</li>
+              <li>Injected Tauri <code>AppHandle</code> into the embedded plugin for background downloads, queue sync, and notifications.</li>
+              <li>Resolved zero-course listing fallback and improved session handling for Udemy and Hotmart.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Security Hardening &amp; Protocol Isolation
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Enforced strict non-null Content Security Policy (CSP) across all Tauri webview windows.</li>
+              <li>Restricted custom asset protocol (<code>asset://</code>) access strictly to app data, user download, and system temp directories.</li>
+              <li>Scoped <code>shell:allow-open</code> permissions to safe web and email protocols (<code>https:</code>, <code>http:</code>, <code>mailto:</code>).</li>
+              <li>Enforced strict <code>0600</code> POSIX file permissions on cached authentication tokens and credentials on disk.</li>
+              <li>Sanitized cookie and authorization headers against CRLF and control character injection attacks.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              UI Polish &amp; Metadata Standardization
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Standardized Windows executable and installer metadata: product name is <strong>OmniGet</strong> and publisher is <strong>OpenSelena</strong>.</li>
+              <li>Dynamic version resolution in the About dialog directly from the Tauri runtime.</li>
+              <li>Cleaned footer credits and standardized tab titles and terminology across all 12 localized languages.</li>
+              <li>Prevented heap out-of-memory errors during frontend bundling by allocating 4GB memory to the build process.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v0.10.5 Release -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.10.5</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Release &bull; October 2026</span>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 700; color: var(--text); margin-top: 6px;">Telegram OmniGram Isolation &amp; Static Plugins</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.10.5" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div style="display: grid; gap: 18px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Telegram &amp; OmniGram Directory Isolation
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Media items downloaded via Telegram now automatically save into dedicated <code>OmniGram/{channel_name}/</code> subfolders.</li>
+              <li>Added OS-safe directory name sanitization for Windows, macOS, and Linux to prevent illegal filesystem characters.</li>
+              <li>Automatic folder reuse on subsequent downloads prevents redundant duplicate directory trees.</li>
+              <li>Fixed <code>DC_ID_INVALID</code> errors when downloading large media archives through home datacenters.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              Statically Embedded Core Plugins
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>The <code>convert</code>, <code>courses</code>, and <code>telegram</code> plugins are now statically compiled into the primary desktop binary, preventing runtime library load failures.</li>
+              <li>Eliminated dynamic library loading errors and duplicate symbol collisions across operating system architectures.</li>
+              <li>Updated plugin registry and repository endpoints to official OpenSelena URLs.</li>
+              <li>Fixed Kajabi login token signature handling and Windows WebView2 COM <code>PWSTR</code> type compatibility.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Linux Bridge &amp; Full Localization
+            </h4>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+              <li>Resolved WebKitGTK local media streaming and session token pre-authentication on Linux desktops.</li>
+              <li>Configured system GStreamer plugin search paths inside AppImage builds to support hardware-accelerated video decoding.</li>
+              <li>Completed full Russian (Русский) UI translation across all application dialogs and views.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- v0.10.4 & Earlier -->
+      <div id="changelog-v0-10-4" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.10.4</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Release &bull; October 2026</span>
+            </div>
+            <h3 style="font-size: 17px; font-weight: 700; color: var(--text); margin-top: 6px;">Plugin Command Signatures &amp; Telegram Sync</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.10.4" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+        <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+          <li>Registered missing login command signatures across course provider authentication routines.</li>
+          <li>Registered background performance monitoring and real-time sync event handlers in Telegram downloader plugin.</li>
+        </ul>
+      </div>
+
+      <!-- v0.10.3 -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="sidebar-tag" style="background: var(--bg-muted); color: var(--text); font-weight: 600; padding: 3px 8px; border-radius: 6px;">v0.10.3</span>
+              <span style="font-size: 13px; color: var(--text-subtle);">Release &bull; September 2026</span>
+            </div>
+            <h3 style="font-size: 17px; font-weight: 700; color: var(--text); margin-top: 6px;">Telegram Datacenter Handshake Fix</h3>
+          </div>
+          <a href="https://github.com/OpenSelena/omniget/releases/tag/v0.10.3" target="_blank" rel="noopener" class="subtab-item" style="border: 1px solid var(--border); text-decoration: none;">
+            <span>View Release on GitHub</span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+        <ul style="margin-left: 20px; color: var(--text-muted); font-size: 14px; line-height: 1.6; display: grid; gap: 4px;">
+          <li>Fixed persistent download interruptions and handshake resets (<code>DC_ID_INVALID</code>) when pulling large media files from Telegram home servers.</li>
+        </ul>
+      </div>
+
+      <!-- Link to Full Dedicated Changelog -->
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 32px;">
+        <div>
+          <h4 style="font-size: 15px; font-weight: 600; color: var(--text);">Archived Releases & Historical Commits</h4>
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 2px;">Review release notes for v0.10.2, v0.10.1, v0.10.0 and earlier milestones in the dedicated changelog.</p>
+        </div>
+        <a href="./changelog/" class="subtab-item" style="background: var(--primary); color: var(--text-inverse); text-decoration: none; font-weight: 600;">
+          <span>Explore Dedicated Changelog &rarr;</span>
+        </a>
+      </div>
+
+      <div class="page-nav-grid">
+        <div></div>
+        <a href="./installation/" class="page-nav-card" style="text-align: right;">
+          <span class="page-nav-sub">Next Guide</span>
+          <span class="page-nav-title" style="justify-content: flex-end; gap: 8px;">
+            <span>Installation Guide &rarr;</span>
+          </span>
+        </a>
+      </div>
+
+    </main>
+
+    <aside class="docs-toc">
+      <div class="toc-title">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h.01" />
+  <path d="M3 12h.01" />
+  <path d="M3 19h.01" />
+  <path d="M8 5h13" />
+  <path d="M8 12h13" />
+  <path d="M8 19h13" /></svg>
+        <span>On this page</span>
+      </div>
+      <ul class="toc-list" id="tocList">
+          <li><a href="#first-download" class="toc-link">1. Quickstart & First Download</a></li>
+          <li><a href="#global-hotkeys" class="toc-link">2. Global Hotkeys & Background Capture</a></li>
+          <li><a href="#comparison" class="toc-link">3. Technical Comparison Matrix</a></li>
+          <li><a href="#media-spectrum" class="toc-link">4. 1,800+ Media Sites & Formats</a></li>
+          <li><a href="#study-ecosystem" class="toc-link">5. Study & Offline Workspace</a></li>
+          <li><a href="#tools-hub" class="toc-link">6. The 158 Offline Tools Hub</a></li>
+          <li><a href="#privacy" class="toc-link">7. Privacy Policy &amp; No Tracking</a></li>
+          <li><a href="#cli-reference" class="toc-link">8. omniget-cli Reference</a></li>
+          <li><a href="#whisper-models" class="toc-link">9. Whisper Model Management</a></li>
+          <li><a href="#changelog" class="toc-link">10. Release Notes &amp; Changelog</a></li>
+      </ul>
+
+      <div class="toc-community-box">
+        <a href="https://github.com/OpenSelena/omniget" class="toc-community-link" target="_blank" rel="noopener">
+          <svg class="icon icon-fill icon-sm" viewBox="0 0 24 24" fill="currentColor"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          <span>Edit page on GitHub</span>
+        </a>
+        <a href="https://t.me/OpenSelena" class="toc-community-link" target="_blank" rel="noopener">
+          <svg class="icon icon-fill icon-sm" viewBox="0 0 24 24" fill="currentColor"><title>Telegram</title><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          <span>Ask in Telegram</span>
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  <!-- SEARCH MODAL -->
+  <div class="search-modal-backdrop" id="searchBackdrop" onclick="closeSearchModal(event)">
+    <div class="search-modal" onclick="event.stopPropagation()">
+      <div class="search-input-wrap">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34" />
+  <circle cx="11" cy="11" r="8" /></svg>
+        <input type="text" class="search-modal-input" id="searchInput" placeholder="Search documentation..." autocomplete="off" />
+      </div>
+      <ul class="search-results-list" id="searchResults">
+        <li class="search-result-item" onclick="location.href='./'">
+          <span class="search-result-title">Quickstart Guide</span>
+          <span class="search-result-desc">Three modes: Visual desktop app, local MCP, and portable mode</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./installation/'">
+          <span class="search-result-title">Installation & OS Binaries</span>
+          <span class="search-result-desc">Windows, macOS Apple Silicon, and Linux packages</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./mcp/'">
+          <span class="search-result-title">Model Context Protocol (MCP) Server</span>
+          <span class="search-result-desc">Local AI agent tools for Claude Code, Cursor, and VS Code</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./courses/'">
+          <span class="search-result-title">36 Online Course Platforms</span>
+          <span class="search-result-desc">Hotmart, Udemy, Rocketseat, Kajabi, and Kiwify integration</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./opennami/'">
+          <span class="search-result-title">OpenNami Social Archiver</span>
+          <span class="search-result-desc">Bulk Instagram, TikTok, and X profile downloader</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./troubleshooting/'">
+          <span class="search-result-title">System Troubleshooting</span>
+          <span class="search-result-desc">macOS Gatekeeper, Linux WebKitGTK, and diagnostic logs</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./#privacy'">
+          <span class="search-result-title">Privacy Policy &amp; No Tracking</span>
+          <span class="search-result-desc">Local SQLite storage, loopback security, and DRM non-circumvention</span>
+        </li>
+        <li class="search-result-item" onclick="location.href='./changelog/'">
+          <span class="search-result-title">Release Notes &amp; Changelog</span>
+          <span class="search-result-desc">Version v0.14.0 updates, Offline Study module, BitTorrent speed &amp; remaining telemetry, Skool &amp; Udemy fixes</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function updateThemeIcons(theme) {
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+      if (!sun || !moon) return;
+      if (theme === 'dark') {
+        sun.style.display = 'inline-block';
+        moon.style.display = 'none';
+      } else {
+        sun.style.display = 'none';
+        moon.style.display = 'inline-block';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark') || 
+                     document.documentElement.getAttribute('data-theme') === 'dark';
+      const target = isDark ? 'light' : 'dark';
+      if (target === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      localStorage.setItem('omniget_docs_theme', target);
+      localStorage.setItem('theme', target);
+      updateThemeIcons(target);
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.querySelector('.docs-sidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (backdrop) backdrop.classList.toggle('open');
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.querySelector('.docs-sidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      if (sidebar) sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('open');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const isDark = document.documentElement.classList.contains('dark') ||
+                     document.documentElement.getAttribute('data-theme') === 'dark';
+      updateThemeIcons(isDark ? 'dark' : 'light');
+
+      if (location.protocol === 'file:') {
+        document.querySelectorAll('a[href]').forEach(a => {
+          let h = a.getAttribute('href');
+          if (h && h.endsWith('/') && !h.startsWith('http') && !h.startsWith('#')) {
+            a.setAttribute('href', h + 'index.html');
+          }
+        });
+        document.querySelectorAll('.search-result-item[onclick]').forEach(item => {
+          let oc = item.getAttribute('onclick');
+          if (oc && oc.includes("location.href='")) {
+            item.setAttribute('onclick', oc.replace("/'", "/index.html'"));
+          }
+        });
+      }
+
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', closeMobileSidebar);
+      });
+    });
+
+    function switchCodeTab(btn, tabId) {
+      const container = btn.closest('.code-container');
+      if (!container) return;
+      container.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      container.querySelectorAll('.code-body pre').forEach(pre => {
+        pre.style.display = (pre.id === tabId) ? 'block' : 'none';
+      });
+    }
+
+    function copyCodeSnippet(btn) {
+      const container = btn.closest('.code-container');
+      if (!container) return;
+      const pres = Array.from(container.querySelectorAll('.code-body pre'));
+      const activePre = pres.find(p => window.getComputedStyle(p).display !== 'none') || pres[0];
+      if (!activePre) return;
+
+      const code = activePre.querySelector('code');
+      const text = (code ? code.innerText : activePre.innerText).trim();
+      const span = btn.querySelector('span');
+      const origText = span ? span.textContent : 'Copy';
+      const origSvg = btn.querySelector('svg') ? btn.querySelector('svg').outerHTML : '';
+      const checkSvg = '<svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+      const showSuccess = () => {
+        if (span) span.textContent = 'Copied!';
+        btn.classList.add('copied');
+        const curSvg = btn.querySelector('svg');
+        if (curSvg) curSvg.outerHTML = checkSvg;
+        setTimeout(() => {
+          if (span) span.textContent = origText;
+          btn.classList.remove('copied');
+          const nowSvg = btn.querySelector('svg');
+          if (nowSvg && origSvg) nowSvg.outerHTML = origSvg;
+        }, 2000);
+      };
+
+      const execCopy = () => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.top = '0';
+          ta.style.left = '0';
+          ta.style.position = 'fixed';
+          ta.style.width = '2em';
+          ta.style.height = '2em';
+          ta.style.padding = '0';
+          ta.style.border = 'none';
+          ta.style.outline = 'none';
+          ta.style.boxShadow = 'none';
+          ta.style.background = 'transparent';
+          ta.setAttribute('readonly', '');
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return ok;
+        } catch (e) {
+          return false;
+        }
+      };
+
+      if (location.protocol === 'file:') {
+        execCopy();
+        showSuccess();
+      } else if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+          .then(showSuccess)
+          .catch(() => {
+            execCopy();
+            showSuccess();
+          });
+      } else {
+        execCopy();
+        showSuccess();
+      }
+    }
+
+    function openSearchModal() {
+      const modal = document.getElementById('searchBackdrop');
+      if (modal) {
+        modal.classList.add('open');
+        setTimeout(() => {
+          const inp = document.getElementById('searchInput');
+          if (inp) inp.focus();
+        }, 50);
+      }
+    }
+
+    function closeSearchModal(e) {
+      const modal = document.getElementById('searchBackdrop');
+      if (modal) modal.classList.remove('open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        openSearchModal();
+      }
+      if (e.key === 'Escape') {
+        closeSearchModal();
+      }
+    });
+
+    const sInput = document.getElementById('searchInput');
+    if (sInput) {
+      sInput.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('#searchResults .search-result-item').forEach(item => {
+          const t = item.textContent.toLowerCase();
+          item.style.display = t.includes(q) ? 'flex' : 'none';
+        });
+      });
+    }
+
+
+    // TOC scrollspy: highlight the section currently in view (vercel.com/docs behavior).
+    (function () {
+      const links = document.querySelectorAll('.toc-list .toc-link');
+      if (!links.length) return;
+      const targets = [];
+      links.forEach(l => {
+        const href = l.getAttribute('href') || '';
+        if (!href.startsWith('#')) return;
+        const el = document.getElementById(href.slice(1));
+        if (el) targets.push([el, l]);
+      });
+      if (!targets.length) return;
+      const setActive = link => links.forEach(x => x.classList.toggle('active', x === link));
+      const obs = new IntersectionObserver(entries => {
+        const visible = entries.filter(e => e.isIntersecting);
+        if (!visible.length) return;
+        const hit = targets.find(([el]) => el === visible[visible.length - 1].target);
+        if (hit) setActive(hit[1]);
+      }, { rootMargin: '-108px 0px -70% 0px' });
+      targets.forEach(([el]) => obs.observe(el));
+    })();
+  </script>
+</body>
+</html>

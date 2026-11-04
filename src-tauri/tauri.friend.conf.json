@@ -1,0 +1,11 @@
+{
+  "productName": "OmniGet Subtitulos",
+  "identifier": "com.angelo.omniget.subtitulos",
+  "build": {
+    "beforeBuildCommand": ""
+  },
+  "bundle": {
+    "publisher": "Angelo",
+    "createUpdaterArtifacts": false
+  }
+}

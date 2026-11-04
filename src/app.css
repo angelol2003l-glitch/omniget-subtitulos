@@ -1,0 +1,849 @@
+@import './lib/style/buttons.css';
+@import './lib/style/primitives.css';
+@import './lib/style/settings.css';
+@import './lib/style/macos-shell.css';
+@import './lib/style/notes.css';
+
+/* Lao script only (unicode-range), so Latin text keeps the chosen UI font. */
+@font-face {
+  font-family: 'OmniGet Lao';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/noto-serif-lao-lao-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0E81-0EDF, U+200C-200D, U+25CC;
+}
+
+/*
+ * OmniGet design tokens — Apple-first.
+ *
+ * Three layers:
+ *   1. Global scale (spacing, type, radius, rows, motion). Never changes per theme.
+ *   2. Per-theme SOURCE tokens (~24 values). Each [data-theme] block only sets these.
+ *   3. Semantic + legacy aliases derived from the sources with color-mix, defined once
+ *      on `:root, [data-theme]` so every theme (and any future one) gets the full set.
+ *
+ * Type follows the macOS text styles (SF Pro): 11 caption, 12 callout, 13 body,
+ * 15 title3, 17 title2, 22 title1, 26 large title. Controls are 28pt, list rows
+ * 28–40pt, sidebar rows 30pt. Radii are concentric: 12 (panes) → 8 (groups) → 6 (controls).
+ */
+
+:root {
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --space-7: 40px;
+  --space-8: 56px;
+  --space-9: 80px;
+
+  --text-caption: 10px;  --leading-caption: 1.3;
+  --text-xs: 11px;       --leading-xs: 1.4;
+  --text-sm: 12px;       --leading-sm: 1.45;
+  --text-base: 13px;     --leading-base: 1.5;
+  --text-md: 15px;       --leading-md: 1.4;
+  --text-lg: 17px;       --leading-lg: 1.35;
+  --text-xl: 22px;       --leading-xl: 1.25;
+  --text-2xl: 26px;      --leading-2xl: 1.2;
+  --text-3xl: 32px;      --leading-3xl: 1.12;
+  --text-display: 40px;  --leading-display: 1.05;
+
+  --track-tight: -0.022em;
+  --track-snug: -0.01em;
+  --track-caps: 0.04em;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 22px;
+  --radius-full: 9999px;
+
+  --control-h: 28px;
+  --control-h-lg: 36px;
+  --row-compact: 28px;
+  --row-base: 40px;
+  --hairline: 1px;
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-bounce: 440ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.32, 1.4, 0.5, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.25, 1);
+
+  --font-display: 'OmniGet Lao', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro', system-ui, 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  --font-body: 'OmniGet Lao', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', system-ui, 'Segoe UI Variable Text', 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace;
+  --font-system: var(--font-body);
+
+  /* legacy layout aliases */
+  --padding: var(--space-3);
+  --border-radius: var(--radius-sm);
+  --bottom-nav-height: 44px;
+  --mobile-nav-clearance: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + var(--padding));
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-display],
+.display {
+  font-family: var(--font-display);
+  letter-spacing: var(--track-snug);
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme sources. `dark` doubles as the fallback on :root.              */
+/* ------------------------------------------------------------------ */
+
+:root, [data-theme="dark"] {
+  color-scheme: dark;
+  --scheme-overlay: white;
+  --primary: #1C1C1E;
+  --pane: #232325;
+  --surface-src: #2A2A2D;
+  --surface-hi-src: #38383B;
+  --secondary: #F5F5F7;
+  --tertiary: #98989D;
+  --sidebar-bg: #212124;
+  --sidebar-highlight: rgba(255, 255, 255, 0.10);
+  --content-border: rgba(255, 255, 255, 0.08);
+  --input-border: rgba(255, 255, 255, 0.14);
+  --popup-bg: #2C2C2E;
+  --dialog-backdrop: rgba(0, 0, 0, 0.5);
+
+  --accent: #FF9F0A;
+  --accent-text: #FFB340;
+  --on-accent: #1E1200;
+  --cta: #FF9F0A;
+  --cta-hover: #FFAD2E;
+  --cta-press: #F09000;
+  --on-cta: #1E1200;
+
+  --blue: #0A84FF;
+  --success: #30D158;
+  --error: #FF453A;
+  --warning: #FFD60A;
+  --on-warning: #2A2000;
+  --purple: #BF5AF2;
+  --teal: #40C8E0;
+
+  --focus-ring: solid 2px color-mix(in srgb, var(--accent) 80%, white);
+  --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0;
+  --elev-alpha-1: 0.35;
+  --elev-alpha-2: 0.45;
+  --elev-alpha-3: 0.6;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --scheme-overlay: black;
+  --primary: #F3F1EC;
+  --pane: #FBFAF7;
+  --surface-src: #FFFFFF;
+  --surface-hi-src: #F5F3EE;
+  --secondary: #1D1D1F;
+  --tertiary: #6E6A64;
+  --sidebar-bg: #ECE9E2;
+  --sidebar-highlight: rgba(0, 0, 0, 0.08);
+  --content-border: rgba(0, 0, 0, 0.08);
+  --input-border: rgba(0, 0, 0, 0.14);
+  --popup-bg: #FFFFFF;
+  --dialog-backdrop: rgba(30, 28, 25, 0.32);
+
+  --accent: #FF9500;
+  --accent-text: #B85C00;
+  --on-accent: #1E1200;
+  --cta: #FF9500;
+  --cta-hover: #FFA424;
+  --cta-press: #F08800;
+  --on-cta: #1E1200;
+
+  --blue: #007AFF;
+  --success: #248A3D;
+  --error: #D70015;
+  --warning: #B25000;
+  --on-warning: #ffffff;
+  --purple: #AF52DE;
+  --teal: #0891B2;
+
+  --focus-ring: solid 2px #E07B00;
+  --focus-ring-offset: 2px;
+  --shadow-ink: 20, 16, 8;
+  --elev-alpha-1: 0.07;
+  --elev-alpha-2: 0.11;
+  --elev-alpha-3: 0.2;
+}
+
+[data-theme="catppuccin-mocha"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #1e1e2e; --pane: #24243a; --surface-src: #313244; --surface-hi-src: #45475a;
+  --secondary: #cdd6f4; --tertiary: #a6adc8;
+  --sidebar-bg: #181825; --sidebar-highlight: rgba(205, 214, 244, 0.12);
+  --content-border: rgba(205, 214, 244, 0.08); --input-border: rgba(205, 214, 244, 0.16);
+  --popup-bg: #313244; --dialog-backdrop: rgba(17, 17, 27, 0.7);
+  --accent: #89b4fa; --accent-text: #89b4fa; --on-accent: #1e1e2e;
+  --cta: #89b4fa; --cta-hover: #74c7ec; --cta-press: #89dceb; --on-cta: #1e1e2e;
+  --blue: #89b4fa; --success: #a6e3a1; --error: #f38ba8; --warning: #f9e2af; --on-warning: #1e1e2e;
+  --purple: #cba6f7; --teal: #94e2d5;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.35; --elev-alpha-2: 0.45; --elev-alpha-3: 0.6;
+}
+
+[data-theme="catppuccin-macchiato"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #24273a; --pane: #2a2d44; --surface-src: #363a4f; --surface-hi-src: #494d64;
+  --secondary: #cad3f5; --tertiary: #a5adcb;
+  --sidebar-bg: #1e2030; --sidebar-highlight: rgba(202, 211, 245, 0.12);
+  --content-border: rgba(202, 211, 245, 0.08); --input-border: rgba(202, 211, 245, 0.16);
+  --popup-bg: #363a4f; --dialog-backdrop: rgba(24, 25, 38, 0.7);
+  --accent: #8aadf4; --accent-text: #8aadf4; --on-accent: #24273a;
+  --cta: #8aadf4; --cta-hover: #7dc4e4; --cta-press: #91d7e3; --on-cta: #24273a;
+  --blue: #8aadf4; --success: #a6da95; --error: #ed8796; --warning: #eed49f; --on-warning: #24273a;
+  --purple: #c6a0f6; --teal: #8bd5ca;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.35; --elev-alpha-2: 0.45; --elev-alpha-3: 0.6;
+}
+
+[data-theme="catppuccin-frappe"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #303446; --pane: #373b50; --surface-src: #414559; --surface-hi-src: #51576d;
+  --secondary: #c6d0f5; --tertiary: #b5bfe2;
+  --sidebar-bg: #292c3c; --sidebar-highlight: rgba(198, 208, 245, 0.12);
+  --content-border: rgba(198, 208, 245, 0.08); --input-border: rgba(198, 208, 245, 0.16);
+  --popup-bg: #414559; --dialog-backdrop: rgba(35, 38, 52, 0.7);
+  --accent: #8caaee; --accent-text: #8caaee; --on-accent: #303446;
+  --cta: #8caaee; --cta-hover: #85c1dc; --cta-press: #99d1db; --on-cta: #303446;
+  --blue: #8caaee; --success: #a6d189; --error: #e78284; --warning: #e5c890; --on-warning: #303446;
+  --purple: #ca9ee6; --teal: #81c8be;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.35; --elev-alpha-2: 0.45; --elev-alpha-3: 0.6;
+}
+
+[data-theme="catppuccin-latte"] {
+  color-scheme: light; --scheme-overlay: black;
+  --primary: #e6e9ef; --pane: #eff1f5; --surface-src: #ffffff; --surface-hi-src: #eff1f5;
+  --secondary: #4c4f69; --tertiary: #6c6f85;
+  --sidebar-bg: #dce0e8; --sidebar-highlight: rgba(76, 79, 105, 0.12);
+  --content-border: rgba(76, 79, 105, 0.10); --input-border: rgba(76, 79, 105, 0.2);
+  --popup-bg: #ffffff; --dialog-backdrop: rgba(76, 79, 105, 0.3);
+  --accent: #1e66f5; --accent-text: #1e66f5; --on-accent: #ffffff;
+  --cta: #1e66f5; --cta-hover: #3b7cf7; --cta-press: #0f55e0; --on-cta: #ffffff;
+  --blue: #1e66f5; --success: #40a02b; --error: #d20f39; --warning: #df8e1d; --on-warning: #ffffff;
+  --purple: #8839ef; --teal: #179299;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 40, 44, 70; --elev-alpha-1: 0.08; --elev-alpha-2: 0.12; --elev-alpha-3: 0.22;
+}
+
+[data-theme="one-dark-pro"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #21252b; --pane: #282c34; --surface-src: #2f343e; --surface-hi-src: #3e4452;
+  --secondary: #d7dce5; --tertiary: #9aa3b2;
+  --sidebar-bg: #1d2025; --sidebar-highlight: rgba(171, 178, 191, 0.12);
+  --content-border: rgba(171, 178, 191, 0.08); --input-border: rgba(171, 178, 191, 0.16);
+  --popup-bg: #2f343e; --dialog-backdrop: rgba(0, 0, 0, 0.6);
+  --accent: #61afef; --accent-text: #61afef; --on-accent: #1b1f26;
+  --cta: #61afef; --cta-hover: #7abdf3; --cta-press: #4d9de0; --on-cta: #1b1f26;
+  --blue: #61afef; --success: #98c379; --error: #e06c75; --warning: #e5c07b; --on-warning: #1b1f26;
+  --purple: #c678dd; --teal: #56b6c2;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.35; --elev-alpha-2: 0.45; --elev-alpha-3: 0.6;
+}
+
+[data-theme="dracula"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #1e1d29; --pane: #22212c; --surface-src: #2b2a3a; --surface-hi-src: #3a3950;
+  --secondary: #f8f8f2; --tertiary: #b6b1cc;
+  --sidebar-bg: #171622; --sidebar-highlight: rgba(248, 248, 242, 0.12);
+  --content-border: rgba(149, 128, 255, 0.14); --input-border: rgba(248, 248, 242, 0.16);
+  --popup-bg: #2b2a3a; --dialog-backdrop: rgba(11, 10, 16, 0.75);
+  --accent: #9580ff; --accent-text: #aa99ff; --on-accent: #ffffff;
+  --cta: #9580ff; --cta-hover: #aa99ff; --cta-press: #7a6be6; --on-cta: #ffffff;
+  --blue: #80c8ff; --success: #8aff80; --error: #ff9580; --warning: #ffca80; --on-warning: #1e1d29;
+  --purple: #ff80bf; --teal: #80ffea;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.4; --elev-alpha-2: 0.5; --elev-alpha-3: 0.65;
+}
+
+[data-theme="nyxvamp-veil"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #1a1a2a; --pane: #1e1e2e; --surface-src: #2b2b3d; --surface-hi-src: #3a3a4f;
+  --secondary: #d9e0ee; --tertiary: #9594ab;
+  --sidebar-bg: #161624; --sidebar-highlight: rgba(217, 224, 238, 0.10);
+  --content-border: rgba(217, 224, 238, 0.07); --input-border: rgba(217, 224, 238, 0.16);
+  --popup-bg: #2b2b3d; --dialog-backdrop: rgba(10, 10, 20, 0.7);
+  --accent: #f5c2e7; --accent-text: #f5c2e7; --on-accent: #1e1e2e;
+  --cta: #f5c2e7; --cta-hover: #f8d7ed; --cta-press: #e8a8d4; --on-cta: #1e1e2e;
+  --blue: #96cdfb; --success: #abe9b3; --error: #e78284; --warning: #f8bd96; --on-warning: #1e1e2e;
+  --purple: #c9a8f5; --teal: #89dceb;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.4; --elev-alpha-2: 0.5; --elev-alpha-3: 0.65;
+}
+
+[data-theme="nyxvamp-obsidian"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #000a0f; --pane: #0b1117; --surface-src: #161c22; --surface-hi-src: #222a31;
+  --secondary: #c8c8d6; --tertiary: #87859b;
+  --sidebar-bg: #04080c; --sidebar-highlight: rgba(192, 192, 206, 0.10);
+  --content-border: rgba(192, 192, 206, 0.07); --input-border: rgba(192, 192, 206, 0.16);
+  --popup-bg: #161c22; --dialog-backdrop: rgba(0, 0, 0, 0.85);
+  --accent: #f5c2e7; --accent-text: #f5c2e7; --on-accent: #000a0f;
+  --cta: #f5c2e7; --cta-hover: #f8d7ed; --cta-press: #e0a8d0; --on-cta: #000a0f;
+  --blue: #7fafd7; --success: #8fbf8f; --error: #d78284; --warning: #d8a080; --on-warning: #000a0f;
+  --purple: #b79cd8; --teal: #7cc4cf;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.5; --elev-alpha-2: 0.6; --elev-alpha-3: 0.75;
+}
+
+[data-theme="nyxvamp-radiance"] {
+  color-scheme: light; --scheme-overlay: black;
+  --primary: #ecebf7; --pane: #f7f7ff; --surface-src: #ffffff; --surface-hi-src: #f1eefc;
+  --secondary: #1e1e2e; --tertiary: #5a5570;
+  --sidebar-bg: #e3e1f2; --sidebar-highlight: rgba(30, 30, 46, 0.10);
+  --content-border: rgba(30, 30, 46, 0.08); --input-border: rgba(30, 30, 46, 0.18);
+  --popup-bg: #ffffff; --dialog-backdrop: rgba(90, 85, 112, 0.3);
+  --accent: #9655ff; --accent-text: #6b3fc9; --on-accent: #ffffff;
+  --cta: #9655ff; --cta-hover: #a56fff; --cta-press: #7f43e6; --on-cta: #ffffff;
+  --blue: #5b6cff; --success: #1f7a5a; --error: #9f1239; --warning: #a35a00; --on-warning: #ffffff;
+  --purple: #9655ff; --teal: #0e7490;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 50, 40, 90; --elev-alpha-1: 0.08; --elev-alpha-2: 0.12; --elev-alpha-3: 0.22;
+}
+
+[data-theme="eink-day"] {
+  color-scheme: light; --scheme-overlay: black;
+  --primary: #ebe7dc; --pane: #f5f2ea; --surface-src: #fbf9f4; --surface-hi-src: #ebe5d7;
+  --secondary: #1d1d1b; --tertiary: #5c5a56;
+  --sidebar-bg: #e3ddcf; --sidebar-highlight: rgba(29, 29, 27, 0.10);
+  --content-border: rgba(29, 29, 27, 0.14); --input-border: rgba(29, 29, 27, 0.26);
+  --popup-bg: #f5f2ea; --dialog-backdrop: rgba(29, 29, 27, 0.35);
+  --accent: #2b2b28; --accent-text: #2b2b28; --on-accent: #f5f2ea;
+  --cta: #2b2b28; --cta-hover: #1d1d1b; --cta-press: #141412; --on-cta: #f5f2ea;
+  --blue: #2b2b28; --success: #3d6e3d; --error: #8a2a2a; --warning: #8a5a1d; --on-warning: #f5f2ea;
+  --purple: #4a3d5c; --teal: #2f5a5a;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 29, 29, 27; --elev-alpha-1: 0.06; --elev-alpha-2: 0.1; --elev-alpha-3: 0.18;
+}
+
+[data-theme="eink-sepia"] {
+  color-scheme: light; --scheme-overlay: black;
+  --primary: #e6dcc3; --pane: #f0e6d2; --surface-src: #f7efe0; --surface-hi-src: #e6dcc3;
+  --secondary: #3f2e20; --tertiary: #6e5440;
+  --sidebar-bg: #dccca8; --sidebar-highlight: rgba(63, 46, 32, 0.10);
+  --content-border: rgba(63, 46, 32, 0.14); --input-border: rgba(63, 46, 32, 0.26);
+  --popup-bg: #f0e6d2; --dialog-backdrop: rgba(63, 46, 32, 0.35);
+  --accent: #7a4a22; --accent-text: #7a4a22; --on-accent: #f0e6d2;
+  --cta: #7a4a22; --cta-hover: #5b3418; --cta-press: #452710; --on-cta: #f0e6d2;
+  --blue: #7a4a22; --success: #3d6e3d; --error: #8a2a2a; --warning: #8a5a1d; --on-warning: #f0e6d2;
+  --purple: #5c3f4a; --teal: #3f5a4a;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 63, 46, 32; --elev-alpha-1: 0.06; --elev-alpha-2: 0.1; --elev-alpha-3: 0.18;
+}
+
+[data-theme="eink-night"] {
+  color-scheme: dark; --scheme-overlay: white;
+  --primary: #060606; --pane: #0d0d0d; --surface-src: #161616; --surface-hi-src: #222222;
+  --secondary: #d4d4d0; --tertiary: #8e8e88;
+  --sidebar-bg: #0a0a0a; --sidebar-highlight: rgba(212, 212, 208, 0.10);
+  --content-border: rgba(212, 212, 208, 0.10); --input-border: rgba(212, 212, 208, 0.2);
+  --popup-bg: #161616; --dialog-backdrop: rgba(0, 0, 0, 0.6);
+  --accent: #b0b0ab; --accent-text: #d4d4d0; --on-accent: #0a0a0a;
+  --cta: #d4d4d0; --cta-hover: #c0c0bc; --cta-press: #a8a8a4; --on-cta: #0a0a0a;
+  --blue: #b0b0ab; --success: #7eaa7e; --error: #c96060; --warning: #d0a060; --on-warning: #0a0a0a;
+  --purple: #a898b8; --teal: #88b0b0;
+  --focus-ring: solid 2px var(--accent); --focus-ring-offset: 2px;
+  --shadow-ink: 0, 0, 0; --elev-alpha-1: 0.5; --elev-alpha-2: 0.6; --elev-alpha-3: 0.75;
+}
+
+/* ------------------------------------------------------------------ */
+/* Semantic layer + legacy aliases (derived once, for every theme).     */
+/* ------------------------------------------------------------------ */
+
+:root, [data-theme] {
+  color: var(--secondary);
+  background-color: var(--primary);
+
+  /* surfaces */
+  --bg: var(--primary);
+  --bg-overlay: var(--scheme-overlay);
+  --surface: var(--surface-src);
+  --surface-hi: var(--surface-hi-src);
+  --surface-mut: color-mix(in srgb, var(--surface-src) 60%, var(--pane));
+  --pane-bg: var(--pane);
+
+  /* text */
+  --text: var(--secondary);
+  --text-muted: color-mix(in srgb, var(--secondary) 62%, var(--tertiary));
+  --text-dim: var(--tertiary);
+  --text-faint: color-mix(in srgb, var(--tertiary) 55%, transparent);
+
+  /* lines */
+  --border: var(--content-border);
+  --border-hi: color-mix(in srgb, var(--secondary) 16%, transparent);
+  --separator: var(--content-border);
+
+  /* fills (Apple systemFill ladder, quaternary → primary) */
+  --fill-1: color-mix(in srgb, var(--secondary) 7%, transparent);
+  --fill-2: color-mix(in srgb, var(--secondary) 11%, transparent);
+  --fill-3: color-mix(in srgb, var(--secondary) 16%, transparent);
+  --fill-4: color-mix(in srgb, var(--secondary) 24%, transparent);
+
+  /* accent family */
+  --accent-hi: var(--accent-text);
+  --accent-lo: color-mix(in srgb, var(--accent) 86%, black);
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  --selection: color-mix(in srgb, var(--accent) 22%, transparent);
+
+  /* status */
+  --info: var(--blue);
+  --danger: var(--error);
+  --on-status: #ffffff;
+  --red: var(--error);
+  --green: var(--success);
+  --orange: var(--accent);
+  --gray: var(--tertiary);
+  --on-primary: var(--secondary);
+  --on-success: #0F1A12;
+  --on-error: #ffffff;
+
+  /* controls (legacy names still consumed widely) */
+  --button: var(--surface-src);
+  --button-hover: var(--surface-hi-src);
+  --button-press: color-mix(in srgb, var(--surface-hi-src) 80%, var(--secondary));
+  --button-text: var(--secondary);
+  --button-stroke: var(--content-border);
+  --button-box-shadow: none;
+  --button-elevated: var(--surface-hi-src);
+  --button-elevated-hover: color-mix(in srgb, var(--surface-hi-src) 88%, var(--secondary));
+  --button-elevated-press: color-mix(in srgb, var(--surface-hi-src) 78%, var(--secondary));
+  --on-button: var(--secondary);
+  --on-button-elevated: var(--secondary);
+  --control-bg: color-mix(in srgb, var(--secondary) 6%, var(--pane));
+  --control-bg-hover: color-mix(in srgb, var(--secondary) 9%, var(--pane));
+  --input-bg: var(--control-bg);
+
+  /* materials — glass only where it separates chrome from content */
+  --material: color-mix(in srgb, var(--sidebar-bg) 74%, transparent);
+  --material-thick: color-mix(in srgb, var(--popup-bg) 88%, transparent);
+  --material-blur: blur(28px) saturate(1.6);
+
+  /* elevation — only for things that float (popovers, sheets, palette) */
+  --elev-0: none;
+  --elev-1:
+    0 0 0 var(--hairline) var(--content-border),
+    0 1px 2px rgba(var(--shadow-ink), var(--elev-alpha-1));
+  --elev-2:
+    0 0 0 var(--hairline) var(--content-border),
+    0 6px 18px rgba(var(--shadow-ink), var(--elev-alpha-2)),
+    0 1px 2px rgba(var(--shadow-ink), var(--elev-alpha-1));
+  --elev-3:
+    0 0 0 var(--hairline) var(--content-border),
+    0 28px 60px rgba(var(--shadow-ink), var(--elev-alpha-3)),
+    0 6px 16px rgba(var(--shadow-ink), var(--elev-alpha-2));
+  --elev-glow:
+    0 0 0 1px var(--accent),
+    0 4px 16px var(--accent-glow);
+}
+
+/* Non-macOS webviews render blur slowly and without vibrancy; use opaque chrome. */
+[data-platform="other"] {
+  --material: var(--sidebar-bg);
+  --material-thick: var(--popup-bg);
+  --material-blur: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base elements                                                        */
+/* ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: auto;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--secondary) 28%, transparent) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--secondary) 24%, transparent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--secondary) 40%, transparent);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.button, img, svg, [data-no-select] {
+  user-select: none;
+}
+
+::selection {
+  background: var(--selection);
+  color: var(--text);
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: var(--primary);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--primary) 92%, var(--secondary)) 0%, var(--primary) 220px);
+  color: var(--text);
+  overscroll-behavior: none;
+}
+
+dialog {
+  margin: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin-block: 0;
+  letter-spacing: var(--track-snug);
+  color: var(--text);
+}
+
+h1 { font-size: var(--text-xl); line-height: var(--leading-xl); letter-spacing: var(--track-tight); }
+h2 { font-size: var(--text-lg); line-height: var(--leading-lg); }
+h3 { font-size: var(--text-md); line-height: var(--leading-md); }
+h4 { font-size: var(--text-base); line-height: var(--leading-base); }
+h5 { font-size: var(--text-sm); line-height: var(--leading-sm); }
+h6 { font-size: var(--text-xs); line-height: var(--leading-xs); }
+
+p {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.link,
+.link {
+  color: var(--accent-hi);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  a.link:hover,
+  .link:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+  background: none;
+  color: inherit;
+  user-select: text;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-dim);
+}
+
+/* Native pop-up button look for every <select> that has no class of its own. */
+select {
+  font-family: inherit;
+  font-size: var(--text-base);
+  color: var(--text);
+  background-color: var(--control-bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  height: var(--control-h);
+  padding: 0 26px 0 var(--space-3);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M3.5 4.75 6 2.25l2.5 2.5M3.5 7.25 6 9.75l2.5-2.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px 12px;
+  box-shadow: inset 0 0 0 var(--hairline) var(--content-border);
+  cursor: pointer;
+}
+
+select:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+option {
+  color: var(--secondary);
+  background-color: var(--popup-bg);
+}
+
+img, svg {
+  pointer-events: none;
+}
+
+hr {
+  border: none;
+  height: var(--hairline);
+  background: var(--separator);
+}
+
+code, kbd, pre, samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+strong, b {
+  font-weight: 600;
+}
+
+/* ---------- Typography helpers ---------- */
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-2xl);
+  font-weight: 700;
+  letter-spacing: var(--track-tight);
+  color: var(--text);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-lg);
+  font-weight: 600;
+  letter-spacing: var(--track-snug);
+  color: var(--text);
+  text-transform: none;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-dim);
+  margin-bottom: var(--space-2);
+}
+
+.numeric,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Legacy .button (still used in a few places) ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  background: var(--button);
+  color: var(--button-text);
+  box-shadow: inset 0 0 0 var(--hairline) var(--button-stroke);
+  border: none;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .button:hover {
+    background: var(--button-hover);
+  }
+}
+
+.button:active {
+  background: var(--button-press);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.button.elevated {
+  background: var(--button-elevated);
+}
+
+@media (hover: hover) {
+  .button.elevated:hover {
+    background: var(--button-elevated-hover);
+  }
+}
+
+.button.elevated:active {
+  background: var(--button-elevated-press);
+}
+
+.button.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* Hide WebView2 / Edge / Chromium native video controls (we use custom UI in PlayerShell). */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-overlay-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-loading-panel,
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-overlay-cast-button,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-pause-button,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-fullscreen-button,
+video::-webkit-media-controls-picture-in-picture-button,
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button,
+video::-webkit-media-controls-timeline,
+video::-webkit-media-controls-current-time-display,
+video::-webkit-media-controls-time-remaining-display,
+video::-internal-media-controls-overlay-cast-button,
+video::-internal-media-controls-button-panel-spacer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  pointer-events: none !important;
+}
+
+video {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Accessibility preferences (Settings → Appearance mirrors the OS)     */
+/* ------------------------------------------------------------------ */
+
+[data-reduce-motion="true"] {
+  --duration-fast: 0.01ms;
+  --duration-base: 0.01ms;
+  --duration-slow: 0.01ms;
+  --duration-bounce: 0.01ms;
+  --ease-spring: var(--ease-out);
+}
+
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+[data-reduce-motion="true"] .spinner,
+[data-reduce-motion="true"] .update-spinner,
+[data-reduce-motion="true"] .dep-spinner,
+[data-reduce-motion="true"] .feedback-spinner {
+  animation: reduce-motion-pulse 1.5s ease-in-out infinite !important;
+}
+
+@keyframes reduce-motion-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+[data-reduce-transparency="true"] {
+  --material: var(--sidebar-bg);
+  --material-thick: var(--popup-bg);
+  --material-blur: none;
+}
+
+@media (prefers-contrast: more) {
+  :root, [data-theme] {
+    --content-border: color-mix(in srgb, var(--secondary) 28%, transparent);
+    --input-border: color-mix(in srgb, var(--secondary) 45%, transparent);
+    --text-dim: color-mix(in srgb, var(--tertiary) 70%, var(--secondary));
+  }
+}
+
+/* A window nobody is looking at should not be asking the GPU for anything.
+   While the app is unfocused every decorative animation stops; the layout and
+   the colours stay exactly as they are, so nothing moves when focus returns. */
+[data-window-blurred] *,
+[data-window-blurred] *::before,
+[data-window-blurred] *::after {
+  animation-play-state: paused !important;
+}

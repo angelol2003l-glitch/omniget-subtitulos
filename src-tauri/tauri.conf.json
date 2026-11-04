@@ -1,0 +1,95 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "OmniGet",
+  "version": "0.14.0",
+  "identifier": "com.openselena.omniget",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "title": "OmniGet",
+        "width": 1100,
+        "height": 720,
+        "minWidth": 800,
+        "minHeight": 560,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "backgroundColor": "#1C1C1E"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' ipc:; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https: ipc:; img-src 'self' asset: data: blob: https:; media-src 'self' asset: blob: https:; font-src 'self' data:; frame-src 'self' https://ghbtns.com;",
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": [
+            "$APPDATA/omniget/**",
+            "$DOWNLOAD/**",
+            "$TEMP/**"
+          ],
+          "deny": [
+            "**/.ssh/**",
+            "**/.aws/**",
+            "**/.git/**"
+          ],
+          "requireLiteralLeadingDot": true
+        }
+      }
+    },
+    "macOSPrivateApi": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlCNTZBNUMzRTY2MEIwN0MKUldSOHNHRG13NlZXbTc2N0Z0aTV5elV3MGQ2ci9zUm1jOHpna2ozY2pJRkJMSEdXNU5UeU0rZ0sK",
+      "endpoints": [
+        "https://github.com/OpenSelena/omniget/releases/latest/download/latest.json"
+      ]
+    },
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "omniget"
+        ]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "OpenSelena",
+    "createUpdaterArtifacts": true,
+    "resources": {
+      "../browser-extension/chrome/": "browser-extension/chrome/",
+      "../browser-extension/firefox/": "browser-extension/firefox/"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "minimumSystemVersion": "10.15"
+    },
+    "linux": {
+      "deb": {
+        "depends": [
+          "libasound2"
+        ],
+        "desktopTemplate": "./desktop.template"
+      },
+      "rpm": {
+        "desktopTemplate": "./desktop.template"
+      }
+    }
+  }
+}

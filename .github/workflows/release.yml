@@ -1,0 +1,404 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            cli_target: 'aarch64-apple-darwin'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            cli_target: 'x86_64-apple-darwin'
+            args: '--target x86_64-apple-darwin'
+          # Ubuntu 22.04 keeps the x86_64 build on glibc 2.35, which is what
+          # lets the AppImage run on older distros. Its PipeWire headers
+          # (0.3.48) are too old for the screen-capture backend to compile, so
+          # that one feature is left out and the client says so at runtime.
+          # The `--` is required: the Tauri CLI forwards what follows it to
+          # cargo, and rejects the flag otherwise. Only the app's default
+          # feature (`linux-capture`) is dropped; `rnnoise` stays because the
+          # dependency declaration asks for it by name.
+          - platform: 'ubuntu-22.04'
+            cli_target: 'x86_64-unknown-linux-gnu'
+            args: '-- --no-default-features'
+          - platform: 'ubuntu-24.04-arm'
+            cli_target: ''
+            args: ''
+          - platform: 'windows-latest'
+            cli_target: 'x86_64-pc-windows-msvc'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-24.04-arm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libasound2-dev libpipewire-0.3-dev clang libclang-dev patchelf xdg-utils
+
+      - uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: 'pnpm'
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Pinned via rust-toolchain.toml: the plugin ABI depends on the exact
+      # rustc version, so this must match what the plugin repos build with.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.97.0
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
+      - name: Configure sccache
+        shell: bash
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Seed patched linuxdeploy-plugin-gtk (Ubuntu only)
+        if: contains(matrix.platform, 'ubuntu')
+        run: |
+          mkdir -p ~/.cache/tauri
+          cp scripts/linux/linuxdeploy-plugin-gtk.sh ~/.cache/tauri/linuxdeploy-plugin-gtk.sh
+          chmod +x ~/.cache/tauri/linuxdeploy-plugin-gtk.sh
+
+      - uses: tauri-apps/tauri-action@v1
+        id: tauri-build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          LDAI_UPDATE_INFORMATION: ${{ contains(matrix.platform, 'ubuntu') && 'gh-releases-zsync|OpenSelena|omniget|latest|*AppImage.zsync' || '' }}
+          # linuxdeploy bundles an old `strip` that fails on modern .relr.dyn
+          # relocations; disable stripping so AppImage bundling succeeds.
+          NO_STRIP: ${{ contains(matrix.platform, 'ubuntu') && '1' || '' }}
+          NODE_OPTIONS: --max-old-space-size=6144
+        with:
+          tagName: v__VERSION__
+          releaseName: 'OmniGet v__VERSION__'
+          releaseBody: |
+            ## Downloads
+
+            **Windows**: `.exe` installer or portable.
+            **macOS**: `.dmg` (Apple Silicon `aarch64` or Intel `x86_64`).
+            **Linux**: `.AppImage` (universal) or `.deb` (Debian/Ubuntu).
+
+            ---
+
+            ### Debian/Ubuntu users: AppImage compatibility
+
+            **Debian 12+ ships without FUSE 2 by default**, which AppImage requires.
+            If `./omniget.AppImage` fails with a libfuse error, run:
+
+            ```bash
+            sudo apt install libfuse2
+            ```
+
+            ...or use `./omniget.AppImage --appimage-extract-and-run`.
+
+            **Easier alternative**: download the `.deb` instead, which works out of the
+            box on Debian 12+ and Ubuntu 22.04+.
+
+            ---
+
+            ### macOS users: "OmniGet is damaged and can't be opened"
+
+            The app is not notarized with Apple yet, so Gatekeeper quarantines it.
+            After moving the app to `/Applications`, run:
+
+            ```bash
+            xattr -cr /Applications/omniget.app
+            ```
+
+            Then open it normally. If it still refuses, allow it under
+            **System Settings → Privacy & Security**.
+
+            ---
+
+            ### Code signing policy
+
+            Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org). Code changes and signed releases are reviewed and approved by the OpenSelena maintainers. See our [Privacy Policy](https://omniget.nav.bd/docs/#privacy).
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: false
+          args: ${{ matrix.args }}
+
+      - name: Generate and upload AppImage zsync files
+        if: contains(matrix.platform, 'ubuntu')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sudo apt-get install -y zsync
+          TAG="${GITHUB_REF#refs/tags/}"
+          for appimage in src-tauri/target/release/bundle/appimage/*.AppImage; do
+            if [ -f "$appimage" ]; then
+              zsyncmake "$appimage" -o "${appimage}.zsync" -u "$(basename "$appimage")"
+              gh release upload "$TAG" "${appimage}.zsync" --repo "${{ github.repository }}" --clobber
+            fi
+          done
+
+      - name: Upload unsigned Windows NSIS installer
+        if: matrix.platform == 'windows-latest' && env.SIGNPATH_API_TOKEN != ''
+        id: upload-unsigned-setup
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-setup
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: warn
+
+      - name: Sign Windows NSIS installer via SignPath
+        if: matrix.platform == 'windows-latest' && env.SIGNPATH_API_TOKEN != '' && steps.upload-unsigned-setup.outputs.artifact-id != ''
+        continue-on-error: true
+        uses: SignPath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: '773e0b25-f263-45c9-8f29-c7a6a1aed6db'
+          project-slug: 'omniget'
+          signing-policy-slug: 'release-signing'
+          github-artifact-id: ${{ steps.upload-unsigned-setup.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: 'src-tauri/target/release/bundle/nsis-signed'
+
+      - name: Publish signed Windows installer to release
+        if: matrix.platform == 'windows-latest' && env.SIGNPATH_API_TOKEN != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          $TAG = "${{ github.ref_name }}"
+          $SIGNED_SETUP = Get-ChildItem "src-tauri/target/release/bundle/nsis-signed" -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($SIGNED_SETUP) {
+            Write-Host "Found SignPath-signed setup installer: $($SIGNED_SETUP.FullName)"
+            if ($env:TAURI_SIGNING_PRIVATE_KEY) {
+              Write-Host "Re-signing updater signature for signed installer..."
+              pnpm tauri signer sign $SIGNED_SETUP.FullName
+              $SIG_FILE = "$($SIGNED_SETUP.FullName).sig"
+              if (Test-Path $SIG_FILE) {
+                gh release upload $TAG $SIG_FILE --repo ${{ github.repository }} --clobber
+              }
+            }
+            gh release upload $TAG $SIGNED_SETUP.FullName --repo ${{ github.repository }} --clobber
+            Write-Host "Successfully published signed installer to release $TAG"
+          } else {
+            Write-Host "No signed installer found in nsis-signed directory; keeping draft installer."
+          }
+        shell: pwsh
+
+      - name: Upload unsigned Windows portable binary
+        if: matrix.platform == 'windows-latest' && env.SIGNPATH_API_TOKEN != ''
+        id: upload-unsigned-portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-portable
+          path: src-tauri/target/release/omniget.exe
+          if-no-files-found: warn
+
+      - name: Sign Windows portable binary via SignPath
+        if: matrix.platform == 'windows-latest' && env.SIGNPATH_API_TOKEN != '' && steps.upload-unsigned-portable.outputs.artifact-id != ''
+        continue-on-error: true
+        uses: SignPath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: '773e0b25-f263-45c9-8f29-c7a6a1aed6db'
+          project-slug: 'omniget'
+          signing-policy-slug: 'release-signing'
+          github-artifact-id: ${{ steps.upload-unsigned-portable.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: 'src-tauri/target/release/portable-signed'
+
+      - name: Upload Windows portable binary
+        if: matrix.platform == 'windows-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $TAG = "${{ github.ref_name }}"
+          $VERSION = $TAG -replace '^v', ''
+          $SIGNED_PORTABLE = Get-ChildItem "src-tauri/target/release/portable-signed" -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          $SRC = if ($SIGNED_PORTABLE) { $SIGNED_PORTABLE.FullName } else { "src-tauri/target/release/omniget.exe" }
+          $DEST = "omniget_${VERSION}_x64-portable.exe"
+          if (Test-Path $SRC) {
+            Write-Host "Uploading portable binary from $SRC to $DEST..."
+            Copy-Item $SRC $DEST
+            gh release upload $TAG $DEST --repo ${{ github.repository }} --clobber
+          }
+        shell: pwsh
+
+      - name: Package and upload CLI (Unix)
+        if: matrix.platform != 'windows-latest' && matrix.cli_target != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          if [ "${{ matrix.platform }}" = "macos-latest" ]; then
+            cargo build -p omniget-cli --release --target ${{ matrix.cli_target }} --manifest-path src-tauri/Cargo.toml
+            BIN="src-tauri/target/${{ matrix.cli_target }}/release/omniget-cli"
+          else
+            cargo build -p omniget-cli --release --manifest-path src-tauri/Cargo.toml
+            BIN="src-tauri/target/release/omniget-cli"
+          fi
+          test -x "$BIN"
+          "$BIN" --version
+          OUT="omniget-cli-${VERSION}-${{ matrix.cli_target }}.tar.gz"
+          tar -czf "$OUT" -C "$(dirname "$BIN")" omniget-cli
+          gh release upload "$TAG" "$OUT" --repo "${{ github.repository }}" --clobber
+
+      - name: Package and upload CLI (Windows)
+        if: matrix.platform == 'windows-latest' && matrix.cli_target != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $TAG = "${{ github.ref_name }}"
+          $VERSION = $TAG -replace '^v', ''
+          cargo build -p omniget-cli --release --manifest-path src-tauri/Cargo.toml
+          $BIN = "src-tauri/target/release/omniget-cli.exe"
+          if (-not (Test-Path $BIN)) { throw "Binary not found: $BIN" }
+          & $BIN --version
+          $OUT = "omniget-cli-${VERSION}-${{ matrix.cli_target }}.zip"
+          Compress-Archive -Path $BIN -DestinationPath $OUT -Force
+          gh release upload $TAG $OUT --repo ${{ github.repository }} --clobber
+        shell: pwsh
+
+  package-chrome-extension:
+    needs: publish-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+
+      - name: Package Chrome extension
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          OUTPUT="omniget-chrome-extension-v${VERSION}.zip"
+          node browser-extension/chrome/scripts/package.mjs --version "$VERSION" --output "$OUTPUT"
+          gh release upload "$TAG" "$OUTPUT" --repo "${{ github.repository }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-updater-json:
+    needs: publish-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate and upload latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          REPO="${GITHUB_REPOSITORY}"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          JSON=$(jq -n \
+            --arg v "$VERSION" \
+            --arg d "$PUB_DATE" \
+            '{version: $v, notes: "", pub_date: $d, platforms: {}}')
+
+          declare -A PLATFORM_MAP=(
+            ["aarch64.app.tar.gz.sig"]="darwin-aarch64"
+            ["x64.app.tar.gz.sig"]="darwin-x86_64"
+            ["amd64.AppImage.sig"]="linux-x86_64"
+            ["aarch64.AppImage.sig"]="linux-aarch64"
+            ["x64-setup.exe.sig"]="windows-x86_64"
+          )
+
+          ASSETS=""
+          for attempt in $(seq 1 10); do
+            ASSETS=$(gh release view "$TAG" --repo "$REPO" --json assets -q '.assets[].name' || true)
+            MISSING=0
+            for SUFFIX in "${!PLATFORM_MAP[@]}"; do
+              if ! echo "$ASSETS" | grep -q "${SUFFIX}$"; then
+                MISSING=$((MISSING + 1))
+              fi
+            done
+            if [ "$MISSING" -eq 0 ]; then
+              echo "All expected .sig assets are visible (attempt $attempt)."
+              break
+            fi
+            echo "Attempt $attempt: $MISSING .sig asset(s) not yet visible, retrying in 30s..."
+            sleep 30
+          done
+
+          TMPDIR=$(mktemp -d)
+
+          for SUFFIX in "${!PLATFORM_MAP[@]}"; do
+            PLATFORM="${PLATFORM_MAP[$SUFFIX]}"
+            SIG_FILE=$(echo "$ASSETS" | grep "${SUFFIX}$" || true)
+
+            if [ -n "$SIG_FILE" ]; then
+              BUNDLE="${SIG_FILE%.sig}"
+              DOWNLOADED=0
+              for dl_attempt in $(seq 1 10); do
+                if gh release download "$TAG" --repo "$REPO" --pattern "$SIG_FILE" --dir "$TMPDIR" --clobber; then
+                  DOWNLOADED=1
+                  break
+                fi
+                echo "Download attempt $dl_attempt for $SIG_FILE failed, retrying in 30s..."
+                sleep 30
+              done
+              if [ "$DOWNLOADED" -ne 1 ]; then
+                echo "Failed to download $SIG_FILE after 10 attempts" >&2
+                exit 1
+              fi
+              SIG_CONTENT=$(cat "$TMPDIR/$SIG_FILE")
+              URL="https://github.com/${REPO}/releases/download/${TAG}/${BUNDLE}"
+
+              JSON=$(echo "$JSON" | jq \
+                --arg p "$PLATFORM" \
+                --arg sig "$SIG_CONTENT" \
+                --arg url "$URL" \
+                '.platforms[$p] = {signature: $sig, url: $url}')
+            fi
+          done
+
+          echo "$JSON" > latest.json
+          echo "Generated latest.json:"
+          cat latest.json
+
+          gh release upload "$TAG" latest.json --repo "$REPO" --clobber
+
+          rm -rf "$TMPDIR"

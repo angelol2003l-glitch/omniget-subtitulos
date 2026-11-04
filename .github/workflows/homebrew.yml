@@ -1,0 +1,88 @@
+# Issue #189: Homebrew install for macOS. Runs when a draft release is published
+# (drafts have no public download URLs yet) and regenerates the cask in
+# OpenSelena/homebrew-tap from the release's two DMGs. Requires the
+# HOMEBREW_TAP_TOKEN secret: a fine-grained PAT with contents:write on the tap repo.
+name: Publish to Homebrew tap
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish (e.g. v0.9.0)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  homebrew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip without token
+        id: gate
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "$HOMEBREW_TAP_TOKEN" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN secret not set - skipping Homebrew tap update"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout tap
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: OpenSelena/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      - name: Regenerate cask
+        if: steps.gate.outputs.skip != 'true'
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          base="https://github.com/$REPO/releases/download/$TAG"
+          curl -fsSL -o arm.dmg "$base/omniget_${version}_aarch64.dmg"
+          curl -fsSL -o intel.dmg "$base/omniget_${version}_x64.dmg"
+          arm_sha=$(sha256sum arm.dmg | cut -d' ' -f1)
+          intel_sha=$(sha256sum intel.dmg | cut -d' ' -f1)
+          mkdir -p tap/Casks
+          cask=tap/Casks/omniget.rb
+          {
+            echo 'cask "omniget" do'
+            echo "  version \"$version\""
+            echo ""
+            echo "  on_arm do"
+            echo "    url \"https://github.com/$REPO/releases/download/$TAG/omniget_#{version}_aarch64.dmg\""
+            echo "    sha256 \"$arm_sha\""
+            echo "  end"
+            echo "  on_intel do"
+            echo "    url \"https://github.com/$REPO/releases/download/$TAG/omniget_#{version}_x64.dmg\""
+            echo "    sha256 \"$intel_sha\""
+            echo "  end"
+            echo ""
+            echo "  name \"OmniGet\""
+            echo "  desc \"Universal downloader and media workstation\""
+            echo "  homepage \"https://github.com/$REPO\""
+            echo ""
+            echo "  app \"omniget.app\""
+            echo ""
+            echo "  zap trash: ["
+            echo "    \"~/Library/Application Support/com.openselena.omniget\","
+            echo "    \"~/Library/Caches/com.openselena.omniget\","
+            echo "  ]"
+            echo "end"
+          } > "$cask"
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/omniget.rb
+          git diff --cached --quiet && { echo "cask already at $version"; exit 0; }
+          git commit -m "omniget $version"
+          git push
+

@@ -1,0 +1,686 @@
+<script lang="ts">
+  import "../app.css";
+  import "$lib/style/queue-kinds.css";
+  import { page } from "$app/state";
+  import { isMac } from "$lib/platform";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
+  import { invoke } from "@tauri-apps/api/core";
+  import { listen } from "@tauri-apps/api/event";
+  import { initDownloadListener } from "$lib/stores/download-listener";
+  import { getCounts } from "$lib/stores/download-store.svelte";
+  import {
+    getUnreadCount as getChatUnreadCount,
+    getMentionTotal as getChatMentionCount,
+    isImmersive,
+    initOmnidisc,
+  } from "$lib/stores/omnidisc-store.svelte";
+  import { getSettings, loadSettings } from "$lib/stores/settings-store.svelte";
+  import { queueExternalPrefill, type ExternalUrlEvent } from "$lib/stores/external-url-store.svelte";
+  import Toast from "$components/toast/Toast.svelte";
+  import AppSidebar from "$components/shell/AppSidebar.svelte";
+  import AppToolbar from "$components/shell/AppToolbar.svelte";
+  import CommandPalette from "$components/shell/CommandPalette.svelte";
+  import { setCommandPaletteItems } from "$lib/stores/command-palette-store.svelte";
+  import {
+    refreshUpdateInfo,
+    getUpdateInfo,
+    isUpdateDismissed,
+    dismissUpdate,
+    getIsUpdating,
+    performUpdate,
+  } from "$lib/stores/update-store.svelte";
+  import { startClipboardMonitor, stopClipboardMonitor, onClipboardUrl } from "$lib/stores/clipboard-monitor";
+  import { readText } from "@tauri-apps/plugin-clipboard-manager";
+  import { initChangelog } from "$lib/stores/changelog-store.svelte";
+  import { checkAnnouncements } from "$lib/stores/announcement-store.svelte";
+  import { needsOnboarding } from "$lib/stores/onboarding-store.svelte";
+  import { isYtdlpAvailable, isDepsChecked, refreshYtdlpStatus } from "$lib/stores/dependency-store.svelte";
+  import { showToast } from "$lib/stores/toast-store.svelte";
+  import { t, locale, isRtlLocale } from "$lib/i18n";
+  import { get } from "svelte/store";
+  import { CORE_NAV_ITEMS, pluginIconForRoute, type NavItem } from "$lib/nav-config";
+  import { TOOLS, toolHref } from "$lib/tools/catalog";
+  import type { Snippet } from "svelte";
+  import type { Component } from "svelte";
+
+  let pluginNavItems = $state<NavItem[]>([]);
+
+  let leagueNavItems = $derived<NavItem[]>(
+    (getSettings()?.league?.enabled ?? true)
+      ? [{ href: "/league", labelKey: "league.nav", icon: "league", group: "app", order: 45 }]
+      : []
+  );
+
+  let coreNavItems = $derived(
+    CORE_NAV_ITEMS.filter((item) => item.href !== "/omnidisc" || (getSettings()?.omnidisc?.enabled ?? true))
+  );
+
+  let allNav = $derived([...coreNavItems, ...leagueNavItems, ...pluginNavItems].sort((a, b) => (a.order ?? 50) - (b.order ?? 50)));
+  let primaryNav = $derived(allNav.filter((item) => item.group === "primary"));
+  let appNav = $derived(allNav.filter((item) => item.group === "app"));
+  let pluginNav = $derived(allNav.filter((item) => item.group === "plugins"));
+
+  let ytdlpDismissed = $state(false);
+  let ytdlpMissing = $derived(isDepsChecked() && !isYtdlpAvailable());
+  let showOnboarding = $derived(needsOnboarding());
+
+  let updateInfo = $derived(getUpdateInfo());
+  let updateDismissed = $derived(isUpdateDismissed());
+  let isUpdating = $derived(getIsUpdating());
+
+  let counts = $derived(getCounts());
+  let badgeLabel = $derived(counts.badge > 99 ? "99+" : String(counts.badge));
+  let chatBadgeCount = $derived(getChatMentionCount() || getChatUnreadCount());
+  let settings = $derived(getSettings());
+
+  let isStreamPopout = $derived(page.url.pathname === "/omnidisc/stream");
+  let hideAppSidebar = $derived(page.url.pathname.startsWith("/omnidisc") && isImmersive());
+  let isCoreRoute = $derived(
+    page.url.pathname === "/" ||
+    page.url.pathname.startsWith("/downloads") ||
+    page.url.pathname.startsWith("/settings") ||
+    page.url.pathname.startsWith("/marketplace") ||
+    page.url.pathname.startsWith("/league") ||
+    page.url.pathname.startsWith("/about") ||
+    page.url.pathname.startsWith("/open-nami"),
+  );
+
+  let isFlushRoute = $derived(
+    page.url.pathname === "/" ||
+    page.url.pathname.startsWith("/downloads") ||
+    page.url.pathname.startsWith("/settings"),
+  );
+
+  let DebugPanel = $state<any>(null);
+  let OnboardingWizard = $state<any>(null);
+  let ChangelogDialog = $state<any>(null);
+  let ConfirmCloseDialog = $state<any>(null);
+  let ShortcutsDialog = $state<any>(null);
+  let LegalDialog = $state<any>(null);
+  let RecoveryDialog = $state<any>(null);
+  let AnnouncementDialog = $state<any>(null);
+
+  function handleExternalUrlEvent(event: Omit<ExternalUrlEvent, "id">) {
+    if (event.action === "prefill") {
+      queueExternalPrefill(event);
+      showToast("info", $t("toast.external_url_ready"));
+      if (page.url.pathname !== "/") {
+        goto("/");
+      }
+      return;
+    }
+
+    if (event.action === "queued") {
+      showToast("success", $t("toast.external_url_queued"));
+    }
+  }
+
+  function reloadPluginNav() {
+    invoke<{ id: string; enabled: boolean; nav: { route: string; label: Record<string, string>; icon_svg: string | null; group: string; order: number }[] }[]>("list_plugins")
+      .then((plugins) => {
+        const items: NavItem[] = [];
+        for (const p of plugins) {
+          if (!p.enabled) continue;
+          for (const n of p.nav) {
+            const icon = pluginIconForRoute(n.route);
+            items.push({
+              href: n.route,
+              label: n.label[get(locale)] || n.label["en"] || p.id,
+              icon,
+              iconSvg: icon === "plugin" ? n.icon_svg || undefined : undefined,
+              group: "plugins",
+              pluginId: p.id,
+              order: n.order,
+            });
+          }
+        }
+        pluginNavItems = items;
+        buildCommandPaletteItems();
+      })
+      .catch(() => {});
+  }
+
+  let omnidiscStarted = false;
+  $effect(() => {
+    if (omnidiscStarted || !(getSettings()?.omnidisc?.enabled ?? true)) return;
+    omnidiscStarted = true;
+    void initOmnidisc();
+  });
+
+  onMount(() => {
+    initDownloadListener();
+    // If `get_settings` failed while the shell was booting, the sidebar has no
+    // League entry and Settings spins forever. Retry a few times instead of
+    // leaving the app half-configured until the next restart.
+    if (!getSettings()) {
+      let attempts = 0;
+      const retry = () => {
+        if (getSettings() || attempts >= 5) return;
+        attempts += 1;
+        loadSettings()
+          .then(() => reloadPluginNav())
+          .catch(() => setTimeout(retry, 1000 * attempts));
+      };
+      setTimeout(retry, 500);
+    }
+
+    if (import.meta.env.DEV) {
+      import("$components/debug/DebugPanel.svelte").then((m) => {
+        DebugPanel = m.default;
+      });
+    }
+
+    import("$components/onboarding/OnboardingWizard.svelte").then((m) => {
+      OnboardingWizard = m.default;
+    });
+    import("$components/dialog/ChangelogDialog.svelte").then((m) => {
+      ChangelogDialog = m.default;
+    });
+    import("$components/dialog/ConfirmCloseDialog.svelte").then((m) => {
+      ConfirmCloseDialog = m.default;
+    });
+    import("$components/dialog/ShortcutsDialog.svelte").then((m) => {
+      ShortcutsDialog = m.default;
+    });
+    import("$components/dialog/LegalDialog.svelte").then((m) => {
+      LegalDialog = m.default;
+    });
+    import("$components/dialog/RecoveryDialog.svelte").then((m) => {
+      RecoveryDialog = m.default;
+    });
+    import("$components/dialog/AnnouncementDialog.svelte").then((m) => {
+      AnnouncementDialog = m.default;
+    });
+
+    refreshYtdlpStatus();
+    refreshUpdateInfo();
+    initChangelog();
+    setTimeout(() => {
+      void checkAnnouncements();
+    }, 2000);
+    reloadPluginNav();
+
+    let unlistenExternalUrl: (() => void) | null = null;
+    let unlistenPlugins: (() => void) | null = null;
+
+    listen<Omit<ExternalUrlEvent, "id">>("external-url-event", (event) => {
+      handleExternalUrlEvent(event.payload);
+    }).then((un) => {
+      unlistenExternalUrl = un;
+    });
+
+    listen("plugins-changed", () => {
+      reloadPluginNav();
+    }).then((un) => {
+      unlistenPlugins = un;
+    });
+
+    return () => {
+      if (unlistenExternalUrl) unlistenExternalUrl();
+      if (unlistenPlugins) unlistenPlugins();
+    };
+  });
+
+  function buildCommandPaletteItems() {
+    setCommandPaletteItems([
+      {
+        id: "nav-home",
+        label: get(t)("nav.home"),
+        group: get(t)("command_palette.group_nav"),
+        keywords: "index main prefill",
+        action: () => goto("/"),
+      },
+      {
+        id: "nav-downloads",
+        label: get(t)("nav.downloads"),
+        group: get(t)("command_palette.group_nav"),
+        keywords: "queue active history",
+        action: () => goto("/downloads"),
+      },
+      {
+        id: "nav-settings",
+        label: get(t)("nav.settings"),
+        group: get(t)("command_palette.group_nav"),
+        keywords: "preferences options config",
+        action: () => goto("/settings"),
+      },
+      {
+        id: "nav-tools",
+        label: get(t)("nav.tools"),
+        group: get(t)("command_palette.group_nav"),
+        keywords: "ferramentas tools utilities apps",
+        action: () => goto("/tools"),
+      },
+      // Cada ferramenta do catálogo entra na paleta com as mesmas
+      // palavras-chave da busca do hub, então ⌘K acha "instagram" também.
+      ...TOOLS.map((tool) => ({
+        id: `tool-${tool.id}`,
+        label: get(t)(`tools.catalog.${tool.id}.name`),
+        group: get(t)("tools.hub.title"),
+        keywords: [...tool.keywords, get(t)(`tools.categories.${tool.category}.name`)].join(" "),
+        action: () => goto(toolHref(tool)),
+      })),
+      {
+        id: "nav-marketplace",
+        label: get(t)("nav.marketplace"),
+        group: get(t)("command_palette.group_nav"),
+        keywords: "plugins extensions store",
+        action: () => goto("/marketplace"),
+      },
+      {
+        id: "nav-about",
+        label: get(t)("nav.about"),
+        group: get(t)("command_palette.group_nav"),
+        keywords: "info version changelog project",
+        action: () => goto("/about"),
+      },
+      // The three former "action" entries ran the same goto() as the
+      // navigation entries above them, so the palette listed Downloads and
+      // Settings twice and Home three times. Only the paste action does
+      // something navigation cannot — `command_palette.action_paste` was
+      // already translated in every locale, just never wired up.
+      {
+        id: "action-paste",
+        label: get(t)("command_palette.action_paste"),
+        group: get(t)("command_palette.group_action"),
+        keywords: "url link add download clipboard prefill",
+        action: async () => {
+          const text = (await readText().catch(() => null))?.trim();
+          if (!text) {
+            showToast("info", get(t)("toast.clipboard_empty") as string);
+            return;
+          }
+          queueExternalPrefill({ action: "prefill", url: text, source: "clipboard" });
+          goto("/");
+        },
+      },
+    ]);
+  }
+
+  $effect(() => {
+    if (settings?.download.clipboard_detection) {
+      onClipboardUrl((clipboardUrl) => {
+        queueExternalPrefill({ action: "prefill", url: clipboardUrl, source: "clipboard" });
+        showToast("info", $t("toast.clipboard_detected") as string);
+        if (page.url.pathname !== "/") {
+          goto("/");
+        }
+      });
+      startClipboardMonitor();
+    } else {
+      onClipboardUrl(null);
+      stopClipboardMonitor();
+    }
+    return () => {
+      onClipboardUrl(null);
+      stopClipboardMonitor();
+    };
+  });
+
+  $effect(() => {
+    document.documentElement.setAttribute("data-shell", "mac");
+    // O shell é o mesmo em todas as plataformas, mas os controles de janela
+    // não: o macOS põe fechar/minimizar à esquerda (sobre a sidebar, titlebar
+    // overlay), Windows e Linux à direita. Sem data-platform o app reservava
+    // espaço morto e encostava a busca no botão de fechar.
+    document.documentElement.setAttribute("data-platform", isMac() ? "macos" : "other");
+    document.documentElement.setAttribute("dir", isRtlLocale($locale) ? "rtl" : "ltr");
+    document.documentElement.setAttribute("lang", $locale || "en");
+    buildCommandPaletteItems();
+  });
+
+  let { children }: { children: Snippet } = $props();
+
+  const VACUUM_LAST_RUN_KEY = "omniget.library.auto_vacuum.last_run";
+
+  async function checkAutoVacuum() {
+    try {
+      const now = Date.now();
+      const lastRunStr = localStorage.getItem(VACUUM_LAST_RUN_KEY);
+      const lastRun = lastRunStr ? parseInt(lastRunStr, 10) : 0;
+
+      if (now - lastRun > 7 * 24 * 60 * 60 * 1000) {
+        await invoke("db_vacuum");
+        localStorage.setItem(VACUUM_LAST_RUN_KEY, String(now));
+      }
+    } catch {}
+  }
+
+  onMount(() => {
+    void checkAutoVacuum();
+  });
+</script>
+
+{#if isStreamPopout}
+  <div class="stream-popout">
+    {@render children()}
+  </div>
+{:else}
+<div class="shell" data-reduce-motion={settings?.accessibility?.reduce_motion} data-reduce-transparency={settings?.accessibility?.reduce_transparency}>
+  {#if !hideAppSidebar}
+    <AppSidebar {primaryNav} {appNav} {pluginNav} {badgeLabel} {chatBadgeCount} />
+  {/if}
+
+  <div class="shell-body">
+    <AppToolbar />
+
+    {#if updateInfo.available && !updateDismissed}
+      <div class="global-update-banner" role="alert">
+        <span class="global-update-text">
+          {#if isUpdating}
+            {$t("settings.update_downloading")}
+          {:else}
+            {$t("settings.update_available", { version: updateInfo.version })}
+          {/if}
+        </span>
+        <div class="global-update-actions">
+          <button
+            type="button"
+            class="global-update-btn"
+            onclick={performUpdate}
+            disabled={isUpdating}
+          >
+            {#if isUpdating}
+              <span class="global-update-spinner"></span>
+            {:else}
+              {$t("settings.update_button")}
+            {/if}
+          </button>
+          <button
+            type="button"
+            class="global-update-close"
+            onclick={dismissUpdate}
+            aria-label={$t("ytdlp_missing_banner.dismiss") as string}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    {/if}
+
+    {#if ytdlpMissing && !ytdlpDismissed}
+      <div class="ytdlp-banner" role="alert">
+        <span class="ytdlp-banner-text">
+          {$t("ytdlp_missing_banner.text")}
+        </span>
+        <div class="ytdlp-banner-actions">
+          <a href="/settings#dependencies" class="button ytdlp-banner-link">
+            {$t("ytdlp_missing_banner.open_settings")}
+          </a>
+          <button
+            type="button"
+            class="ytdlp-banner-close"
+            onclick={() => (ytdlpDismissed = true)}
+            aria-label={$t("ytdlp_missing_banner.dismiss") as string}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    {/if}
+
+    <main id="main-content" class="content">
+      <div class="mac-pane" class:mac-pane--flush={isFlushRoute}>
+        {#if isCoreRoute}
+          <div class="core-shell" class:core-shell--flush={isFlushRoute}>
+            {@render children()}
+          </div>
+        {:else}
+          <div class="mac-pane-scroll">
+            {@render children()}
+          </div>
+        {/if}
+      </div>
+    </main>
+  </div>
+</div>
+{/if}
+
+<Toast />
+<CommandPalette />
+
+{#if showOnboarding && OnboardingWizard}
+  <OnboardingWizard />
+{/if}
+
+{#if DebugPanel}
+  <DebugPanel />
+{/if}
+
+{#if ChangelogDialog}
+  <ChangelogDialog />
+{/if}
+
+{#if ConfirmCloseDialog}
+  <ConfirmCloseDialog />
+{/if}
+
+{#if ShortcutsDialog}
+  <ShortcutsDialog />
+{/if}
+
+{#if LegalDialog}
+  <LegalDialog />
+{/if}
+
+{#if RecoveryDialog}
+  <RecoveryDialog />
+{/if}
+
+{#if AnnouncementDialog}
+  <AnnouncementDialog />
+{/if}
+
+<style>
+  .shell {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .shell-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .core-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+    margin: 0;
+    overflow-y: auto;
+  }
+
+  .core-shell--flush {
+    padding: 0;
+    overflow: hidden;
+  }
+
+
+
+  .stream-popout {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .global-update-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: 0 var(--pane-inset) var(--space-2) 0;
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+    background: var(--accent);
+    color: var(--on-accent);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
+  }
+
+  .global-update-text {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .global-update-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .global-update-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 24px;
+    font-size: var(--text-sm);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--on-accent) 18%, transparent);
+    color: var(--on-accent);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .global-update-btn:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  @media (hover: hover) {
+    .global-update-btn:not(:disabled):hover {
+      background: color-mix(in srgb, var(--on-accent) 26%, transparent);
+    }
+  }
+
+  .global-update-btn:focus-visible {
+    outline: 2px solid var(--on-accent);
+    outline-offset: 2px;
+  }
+
+  .global-update-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: color-mix(in srgb, var(--on-accent) 80%, transparent);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  @media (hover: hover) {
+    .global-update-close:hover {
+      background: color-mix(in srgb, var(--on-accent) 18%, transparent);
+      color: var(--on-accent);
+    }
+  }
+
+  .global-update-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid color-mix(in srgb, var(--on-accent) 30%, transparent);
+    border-top-color: var(--on-accent);
+    border-radius: var(--radius-full);
+    animation: spin var(--duration-slow) linear infinite;
+    flex-shrink: 0;
+  }
+
+  .ytdlp-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: 0 var(--pane-inset) var(--space-2) 0;
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+    background: color-mix(in srgb, var(--warning) 16%, var(--pane-bg));
+    color: var(--text);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 0 0 var(--hairline) color-mix(in srgb, var(--warning) 40%, transparent);
+    font-size: var(--text-base);
+  }
+
+  .ytdlp-banner-text {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .ytdlp-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .ytdlp-banner-link {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    font-size: var(--text-sm);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--cta);
+    color: var(--on-cta);
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: none;
+  }
+
+  @media (hover: hover) {
+    .ytdlp-banner-link:hover {
+      background: var(--cta-hover);
+    }
+  }
+
+  .ytdlp-banner-link:active {
+    background: var(--cta-press);
+  }
+
+  .ytdlp-banner-link:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .ytdlp-banner-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  @media (hover: hover) {
+    .ytdlp-banner-close:hover {
+      background: var(--fill-2);
+      color: var(--text);
+    }
+  }
+</style>
