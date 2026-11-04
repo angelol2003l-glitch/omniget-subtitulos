@@ -18,6 +18,9 @@ tiktok-downloader, instagram-downloader, twitter-downloader, reddit-downloader, 
 twitch-downloader, subtitle-downloader, epub-reader, spaced-repetition
 -->
 
+> [!NOTE]
+> Esta es una edición de OmniGet para Windows que integra subtítulos en español en los MP4 de Udemy cuando están disponibles. Descarga esta edición desde **Releases de este repositorio** y consulta [las instrucciones para compartirla](COMPARTIR-CON-AMIGO.md). El [proyecto original](https://github.com/OpenSelena/omniget) se mantiene por separado.
+
 <p align="center">
   <img src="assets/readme/hero.gif" alt="OmniGet: paste a link, get the file. Loop, the mascot, sends video, music, PDF, image, course and torrent files into a folder. Courses, video, audio, images and torrents, then transcribe, convert, read and study." width="100%" />
 </p>
